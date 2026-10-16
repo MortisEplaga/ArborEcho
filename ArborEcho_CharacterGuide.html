@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arbor Echo — Создание персонажа: пошаговый гайд</title>
+<style>
+:root{
+  --bg:#111510;--bg2:#181d16;--bg3:#1e2519;--border:#354533;--brite:#506a4c;
+  --gold:#c8a84b;--green:#7ab870;--teal:#4a9080;--red:#b8735f;
+  --text:#d5ccbc;--dim:#8a8175;--dim2:#6d6558;
+  --head:'Cinzel',Georgia,'Times New Roman',serif;
+  --body:'IM Fell English',Georgia,'Times New Roman',serif;
+  --mono:'Share Tech Mono','Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#0d100b;font-family:var(--body);font-size:13px;color:var(--text);
+     padding:14px 10px 60px;-webkit-text-size-adjust:100%}
+.topwrap{position:sticky;top:0;z-index:200;max-width:210mm;margin:0 auto 14px}
+.topbar{display:flex;gap:3px;flex-wrap:wrap;align-items:center;background:#10140e;
+        border:1px solid var(--border);border-top:2px solid var(--gold);padding:6px 9px}
+.topbar .brand{font-family:var(--head);font-size:12px;letter-spacing:.14em;color:var(--gold);
+               margin-right:9px;white-space:nowrap}
+.navbtn{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;
+        color:var(--dim);background:none;border:1px solid transparent;border-radius:2px;
+        padding:4px 7px;cursor:pointer;line-height:1.4;text-decoration:none}
+.navbtn:hover{color:var(--gold);border-color:var(--border)}
+.page{width:210mm;max-width:100%;min-height:297mm;margin:0 auto 14px;background:var(--bg);
+      padding:9mm 10mm 7mm;position:relative;border:1px solid #2a3028;
+      display:flex;flex-direction:column;gap:6px}
+.pg-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+         border-bottom:2px solid var(--gold);padding-bottom:5px;flex:0 0 auto}
+.pg-head .hl{display:flex;align-items:baseline;gap:12px;min-width:0}
+.pg-head .k{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--green)}
+.pg-head .title{font-family:var(--head);font-size:17px;letter-spacing:.08em;color:var(--gold);line-height:1.15}
+.pg-head .title.long{font-size:12.5px;letter-spacing:.05em}
+.pg-head .pgn{font-family:var(--mono);font-size:9px;color:var(--dim);white-space:nowrap}
+.pg-foot{margin-top:auto;padding-top:5px;border-top:1px solid var(--border);font-family:var(--mono);
+         font-size:8px;color:var(--dim2);letter-spacing:.1em;text-align:center;flex:0 0 auto}
+.cover{align-items:center;justify-content:center;text-align:center;gap:9px;padding:12mm 12mm 10mm}
+.cover .kicker{font-family:var(--mono);font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--dim)}
+.cover h1{font-family:var(--head);font-size:34px;letter-spacing:.14em;color:var(--gold);margin:4px 0 0}
+.cover .rule{display:flex;align-items:center;gap:10px;width:70%;margin:2px auto;color:var(--brite);font-size:12px}
+.cover .rule::before,.cover .rule::after{content:'';flex:1;border-top:1px solid var(--brite)}
+.cover .tagline{font-style:italic;color:var(--dim);font-size:13px;max-width:560px;line-height:1.55}
+.cover .meta{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+             color:var(--dim);line-height:1.9}
+.sh2{font-family:var(--head);font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);
+     border-bottom:1px solid var(--border);padding-bottom:3px;margin:2px 0 1px}
+.sh3{font-family:var(--head);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--green);margin:8px 0 0}
+.step{display:flex;align-items:center;gap:9px;margin:0 0 2px}
+.step .n{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:#0d100b;background:var(--gold);
+         padding:2px 6px;border-radius:2px;white-space:nowrap}
+.step .t{font-family:var(--head);font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);line-height:1.2}
+.step .s{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-left:auto}
+.txt{font-size:12px;line-height:1.55;margin:0 0 6px;text-align:justify}
+.txt b,.txt strong{color:#ece1c8}
+.lead .txt:first-of-type{font-size:12.5px;color:#e6dcc4}
+ul.bl{list-style:none;margin:2px 0 7px}
+ul.bl li{position:relative;padding:2px 0 2px 14px;font-size:11.5px;line-height:1.45}
+ul.bl li::before{content:'\25C6';position:absolute;left:0;top:5px;font-size:6px;color:var(--green)}
+ul.bl li b{color:#ece1c8}
+ul.bl.kv li{padding-left:0}
+ul.bl.kv li::before{display:none}
+ol.nl{margin:2px 0 7px 18px;font-size:11.5px;line-height:1.5}
+ol.nl li{margin:3px 0}
+ol.nl li b{color:#ece1c8}
+.f{font-family:var(--mono);font-size:11px;background:var(--bg3);border-left:3px solid var(--green);
+   padding:5px 9px;margin:5px 0;color:#e0d8c8;line-height:1.6;break-inside:avoid}
+.f .fl{color:var(--gold)}
+.f .fe{color:#eae2cf}
+.f .fd{color:var(--dim);font-size:9.5px}
+table.tb{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10.5px;margin:5px 0 8px}
+table.tb th{background:var(--bg3);color:var(--gold);font-family:var(--head);font-size:9px;
+            letter-spacing:.08em;padding:4px 6px;border:1px solid var(--border);text-align:center;line-height:1.3}
+table.tb td{padding:4px 6px;border:1px solid var(--border);vertical-align:middle;text-align:center;line-height:1.4}
+table.tb td.L{text-align:left}
+table.tb td.rh{background:var(--bg3);color:var(--gold);font-family:var(--head);font-size:9.5px;
+               text-align:left;letter-spacing:.02em}
+table.tb td.dash{color:#4d5548}
+table.tb tr:nth-child(even) td:not(.rh){background:rgba(255,255,255,.022)}
+table.tb td.g{color:var(--green)}
+table.tb td.o{color:var(--gold)}
+table.tb td.r{color:var(--red)}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:5px 0 8px}
+.cards.c3{grid-template-columns:repeat(3,1fr)}
+.cards.c1{grid-template-columns:1fr}
+.card{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--brite);
+      padding:5px 8px 6px;border-radius:2px;break-inside:avoid}
+.card .cn{font-family:var(--head);font-size:11.5px;color:var(--gold);margin-bottom:3px;letter-spacing:.02em;line-height:1.25}
+.card .cr{display:grid;grid-template-columns:82px 1fr;gap:6px;font-size:10.5px;line-height:1.45;padding:1px 0}
+.card .cr i{font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:.08em;
+            color:var(--dim);font-style:normal;padding-top:2px}
+.card .cr span{color:var(--text)}
+.card.warn{border-left-color:var(--red)}
+.card.good{border-left-color:var(--green)}
+.note{font-style:italic;color:var(--dim);font-size:10.5px;margin:4px 0;padding-left:8px;
+      border-left:2px solid var(--border);line-height:1.5}
+.note b{color:var(--gold);font-style:normal}
+.grid2{display:grid;grid-template-columns:1fr 1fr;column-gap:7mm;align-items:start}
+.chk{list-style:none;margin:3px 0 7px}
+.chk li{position:relative;padding:3px 0 3px 20px;font-size:11.5px;line-height:1.45;
+        border-bottom:1px dotted rgba(255,255,255,.07)}
+.chk li::before{content:'\2751';position:absolute;left:2px;top:3px;font-size:11px;color:var(--brite)}
+.toc{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;margin-top:4px;align-content:start}
+.toc a{display:flex;align-items:baseline;gap:6px;text-decoration:none;padding:3px 0;
+       border-bottom:1px dotted rgba(255,255,255,.07);color:var(--text)}
+.toc a span{flex:1;font-size:11.5px}
+.toc a i{font-style:normal;font-family:var(--mono);font-size:9px;color:var(--dim2)}
+.toc a:hover span{color:var(--gold)}
+.exhead{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+        color:var(--green);border-bottom:1px solid var(--border);padding-bottom:3px;margin:7px 0 2px}
+@media (max-width:640px){.cards,.cards.c3,.grid2,.toc{grid-template-columns:1fr}
+  .cover h1{font-size:24px}.page{padding:6mm 5mm 5mm}}
+</style>
+</head>
+<body>
+
+<div class="topwrap"><div class="topbar">
+  <span class="brand">Arbor Echo · Гайд</span>
+  <a class="navbtn" href="#fast">Быстрый путь</a>
+  <a class="navbtn" href="#s0">0 · Стол</a>
+  <a class="navbtn" href="#s1">1 · Концепция</a>
+  <a class="navbtn" href="#s2">2 · Возраст</a>
+  <a class="navbtn" href="#s3">3 · Лист</a>
+  <a class="navbtn" href="#s4">4 · Очки</a>
+  <a class="navbtn" href="#s5">5 · Вторичные</a>
+  <a class="navbtn" href="#s6">6 · Следы</a>
+  <a class="navbtn" href="#s7">7 · Магия</a>
+  <a class="navbtn" href="#s8">8 · Шаблоны</a>
+  <a class="navbtn" href="#s9">9 · Проверка</a>
+  <a class="navbtn" href="#ex">Примеры</a>
+  <a class="navbtn" href="#map">Карта навыков</a>
+</div></div>
+
+<!-- ============ ОБЛОЖКА / СОДЕРЖАНИЕ ============ -->
+<section class="page cover" id="top">
+  <div class="kicker">Arbor Echo · настольная ролевая игра</div>
+  <h1>СОЗДАНИЕ ПЕРСОНАЖА</h1>
+  <div class="rule">✦</div>
+  <div class="tagline">Пошаговый гайд: от договорённости со столом до последней цифры в листе.
+  Десять шагов, два разобранных примера и карта всех сорока восьми навыков.</div>
+  <div class="meta">
+    Пар · Телеграф · Строгая магия · Альтернативное начало XX века<br>
+    Companion-документ к Книге правил · CC BY-NC 4.0
+  </div>
+  <div style="width:100%;max-width:620px;margin-top:14px;text-align:left">
+    <div class="sh2" style="text-align:center">Содержание</div>
+    <div class="toc">
+      <a href="#fast"><span>Быстрый путь: персонаж за 15 минут</span><i>1 стр.</i></a>
+      <a href="#s0"><span>Шаг 0 · Договориться со столом</span><i>2</i></a>
+      <a href="#s1"><span>Шаг 1 · Концепция одной фразой</span><i>2</i></a>
+      <a href="#s2"><span>Шаг 2 · Возраст: бюджет и обязательные следы</span><i>3</i></a>
+      <a href="#s3"><span>Шаг 3 · Как устроен лист: 5 → 16 → 48</span><i>4</i></a>
+      <a href="#s4"><span>Шаг 4 · Распределение очков</span><i>5</i></a>
+      <a href="#s5"><span>Шаг 5 · Вторичные характеристики</span><i>6</i></a>
+      <a href="#s6"><span>Шаг 6 · Стартовые следы</span><i>7</i></a>
+      <a href="#s7"><span>Шаг 7 · Одаренность и магия</span><i>8</i></a>
+      <a href="#s8"><span>Шаг 8 · Шаблоны действий</span><i>9</i></a>
+      <a href="#s9"><span>Шаг 9 · Финальная проверка и частые ошибки</span><i>10</i></a>
+      <a href="#ex"><span>Два разобранных примера</span><i>11</i></a>
+      <a href="#arch"><span>Три наброска-архетипа</span><i>13</i></a>
+      <a href="#map"><span>Карта всех 48 навыков</span><i>14</i></a>
+    </div>
+  </div>
+  <div class="pg-foot">Arbor Echo · Создание персонажа · CC BY-NC 4.0 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="355140595057540705040d755258545c591b565a58">[email&#160;protected]</a></div>
+</section>
+
+<!-- ============ БЫСТРЫЙ ПУТЬ ============ -->
+<section class="page" id="fast">
+  <div class="pg-head"><div class="hl">
+    <span class="k">Сжатая версия</span><span class="title">Быстрый путь</span>
+  </div><span class="pgn">1 / 14</span></div>
+
+  <p class="txt">Если книга правил прочитана, а персонаж нужен сегодня — этого списка достаточно.
+  Каждый пункт раскрывается в своём шаге ниже; спорные места помечены стрелкой на шаг.</p>
+
+  <ol class="nl">
+    <li><b>Спросите у Мастера режим партии</b> (спринт или марафон) и берёт ли он магию в игру.
+        От этого зависит, нужны ли вам патологии и модификации. → шаг 0</li>
+    <li><b>Сформулируйте концепцию одной фразой</b> и назовите 2–3 события, которые привели героя
+        к первой сцене. → шаг 1</li>
+    <li><b>Выберите точный возраст</b> и выпишите из Приложения 2 два числа: свободные очки
+        и очки Здоровья. → шаг 2</li>
+    <li><b>Заполните лист</b>: 2–3 несущих аспекта по 3–5 очков в навык, поддержка по 1–3,
+        ни одного первичного значения выше 5. Здоровье — из своего пула. Изнанку не трогайте. → шаги 3–4</li>
+    <li><b>Пусть лист посчитает сам</b>: введите только первичные значения, остальное
+        (аспекты, характеристики, РЗН, вторичные) вычисляется автоматически. → шаг 5</li>
+    <li><b>Добавьте следы, если требует возраст</b>: от 35 лет — вероятны, от 51 — обязательны.
+        Карточка патологии или старая травма. → шаг 6</li>
+    <li><b>Если Мастер дал одаренность</b> — распределите отдельный пул Изнанки (2–6 очков,
+        не больше 3 в один навык) и запишите один стартовый Гейс. → шаг 7</li>
+    <li><b>Заготовьте 3–5 типовых заявок</b> со навыками и стоимостью в ОД, чтобы не считать их за столом. → шаг 8</li>
+    <li><b>Пройдите чек-лист</b> из шага 9 и проговорите связи с другими персонажами.</li>
+  </ol>
+
+  <div class="sh3">Что нужно держать на столе</div>
+  <ul class="bl">
+    <li><b>Лист персонажа</b> — вкладка «Лист персонажа» в общем файле; он считает всё сам, вводятся только первичные значения.</li>
+    <li><b>Приложение 1</b> — определения характеристик, аспектов и навыков (нужно один раз, чтобы выбрать).</li>
+    <li><b>Приложение 2</b> — бюджет очков по возрасту.</li>
+    <li><b>2d6</b> и Ширма Мастера — для проверки, что стартовые цифры вообще достают до нужных сложностей.</li>
+  </ul>
+
+  <div class="f"><span class="fl">Главная формула листа</span><br>
+    РЗН = ИЗН + аспект + характеристика + ЗС<br>
+    <span class="fd">ИЗН — первичное значение (потолок 5 при создании). Аспект — среднее его трёх навыков.
+    Характеристика — среднее её аспектов. ЗС — значение следа. Дробные величины не округляются
+    по дороге; округление применяется один раз к итогу, 0,5 и выше — вверх.</span></div>
+
+  <div class="note">Гайд не заменяет Книгу правил: он собирает разбросанное по шести разделам
+  в один порядок действий и показывает арифметику на конкретных числах. Все правила здесь —
+  цитата или прямой пересчёт из книги; места, где книга молчит или допускает два чтения,
+  помечены явно и вынесены в вопросы Мастеру.</div>
+
+  <div class="pg-foot">Arbor Echo · Создание персонажа · CC BY-NC 4.0 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5632233a3334376466676e16313b373f3a7835393b">[email&#160;protected]</a></div>
+</section>
+
+<!-- ============ ШАГ 0 ============ -->
+<section class="page" id="s0">
+  <div class="pg-head"><div class="hl">
+    <span class="k">До цифр</span><span class="title long">Шаг 0 · Договориться со столом</span>
+  </div><span class="pgn">2 / 14</span></div>
+
+  <p class="txt">Arbor Echo — система с отключаемыми модулями, и половина ошибок создания персонажа
+  происходит не в арифметике, а из-за того, что игрок построил под одни правила, а стол играет по другим.
+  Пять минут разговора до листа экономят час переделывания.</p>
+
+  <div class="sh3">Что обязательно выяснить</div>
+  <table class="tb">
+    <tr><th style="width:26%">Вопрос</th><th>Варианты и на что влияют</th></tr>
+    <tr><td class="rh">Режим кампании</td><td class="L"><b>Спринт</b>: патологии не используются, последствия травм не используются, лечение и установка модификаций ускорены. <b>Марафон</b>: всё работает полноценно, лечение требует времени и средств, тайм-скипы пересчитывают пул навыков по возрастной таблице. Если режим спринтовый, карточки патологий и модификаций можно не делать вовсе.</td></tr>
+    <tr><td class="rh">Магия в партии</td><td class="L">Есть ли одаренные персонажи вообще, сколько их, какого направления. Одаренность — врожденная особенность, и решение по ней принимает Мастер. Без этого ответа нельзя планировать Изнанку.</td></tr>
+    <tr><td class="rh">Модификации</td><td class="L">Доступны ли био- и кибермодификации, кто их оплачивает (артель, армия, Дом, личные средства). Книга прямо советует не совмещать модификации и магию на одном персонаже в первой игре.</td></tr>
+    <tr><td class="rh">Канон партии</td><td class="L">Какие регионы, Великие Дома, Храмы и тайные организации в игре; какие события мира уже произошли. Предыстория, противоречащая канону, переписывается позже и дороже.</td></tr>
+    <tr><td class="rh">Опциональные правила</td><td class="L">Модификатор экипировки (примечание [12]) — используется или влияние снаряжения остаётся частью модификатора условий; правило [6] — «подготовка сверх ступени даёт +1 к броску за каждые 2 полных единицы среднего опорного навыка, максимум +2». Оба вводятся только по общему согласию.</td></tr>
+    <tr><td class="rh">Связи между персонажами</td><td class="L">Общее прошлое, служба, родство, долги. Книга рекомендует проговорить их на создании: это даёт готовые поводы для сцен и сильно удешевляет вход в Изнанку по модификатору моста (общая биография −2).</td></tr>
+  </table>
+
+  <div class="sh3">Открытые вопросы, которые книга не закрывает</div>
+  <div class="cards">
+    <div class="card warn"><div class="cn">Аура без одаренности</div>
+      <div class="cr"><i>Суть</i><span>У заклинаний Материи и Менталистики ведущий навык — Изнанка, то есть нужна одаренность. У заклинаний Ауры ведущий — обычный навык из шаблона: Концентрация, Запугивание, Проприоцепция.</span></div>
+      <div class="cr"><i>Вопрос</i><span>Может ли неодаренный персонаж брать Ауру? Прямого ответа в книге нет. Решите на нулевом шаге и запишите.</span></div>
+    </div>
+    <div class="card warn"><div class="cn">Бонус к аспекту в листе</div>
+      <div class="cr"><i>Суть</i><span>Фундаментальное просветление даёт «+1 к аспекту». Автоматический лист считает аспекты как среднее первичных значений и отдельного поля для бонуса к аспекту не имеет.</span></div>
+      <div class="cr"><i>Вопрос</i><span>Как его учитывать: вручную пересчитывать характеристику или писать +1 в ЗС всем трём навыкам аспекта. Договоритесь заранее.</span></div>
+    </div>
+    <div class="card warn"><div class="cn">Границы возрастных таблиц</div>
+      <div class="cr"><i>Суть</i><span>Категории возраста (Юный 10–19, Молодой 20–34, Зрелый 35–50, Пожилой 51–84) и строки Приложения 2 (10–14, 15–24, 25–34, …) не совпадают на 19/20 и 50/51 годах.</span></div>
+      <div class="cr"><i>Правило</i><span>Очки — по строке Приложения 2 для точного возраста; нарративные особенности и обязательность следов — по категории. → шаг 2</span></div>
+    </div>
+    <div class="card warn"><div class="cn">«−1 Здоровье» в карточке</div>
+      <div class="cr"><i>Суть</i><span>Карточки патологий называют то навык («−1 Точная моторика»), то аспект («−1 Здоровье»). Куда именно писать — влияет на результат: след в первичном значении пересчитывает аспект, характеристику и соседние навыки.</span></div>
+      <div class="cr"><i>Правило</i><span>Уточняйте у Мастера для каждой карточки. → шаг 6</span></div>
+    </div>
+  </div>
+
+  <div class="pg-foot">Arbor Echo · Создание персонажа · CC BY-NC 4.0 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4d293821282f2c7f7d7c750d2a202c2421632e2220">[email&#160;protected]</a></div>
+</section>
+
+<!-- ============ ШАГ 1 ============ -->
+<section class="page" id="s1">
+  <div class="pg-head"><div class="hl">
+    <span class="k">Образ</span><span class="title long">Шаг 1 · Концепция одной фразой</span>
+  </div><span class="pgn">2 / 14</span></div>
+
+  <p class="txt">Книга предлагает метод «от концепции к деталям», и порядок здесь важен: цифры в Arbor Echo
+  лучше ложатся на уже придуманного человека, чем наоборот. Начните с сути вроде
+  «разочарованный исследователь» или «наследник обедневшего рода» — и только потом решайте,
+  сколько очков уйдёт в Анатомию.</p>
+
+  <div class="sh3">Порядок работы</div>
+  <ol class="nl">
+    <li><b>Базовая идея.</b> Одна фраза: кем персонаж был до первой сцены и чего он хочет теперь.</li>
+    <li><b>Ключевые события.</b> Два-три события, кардинально повлиявших на жизнь и приведших к текущему моменту.
+        Книга прямо советует связать их с возможными начальными следами или сильными убеждениями —
+        это самый дешёвый способ получить персонажа, у которого механика и биография не спорят.</li>
+    <li><b>Характерные детали.</b> Манеры, привычки, детали внешности. Одна точная деталь работает лучше пяти общих.</li>
+    <li><b>Незакрытые места.</b> Оставьте пару явных пробелов: предыстория не должна отвечать на все вопросы.
+        Это пространство, которое Мастер будет заполнять сюжетом.</li>
+  </ol>
+
+  <div class="sh3">Чек-лист предыстории</div>
+  <div class="grid2">
+    <div class="col">
+      <div class="sh3" style="margin-top:2px">Идентичность и происхождение</div>
+      <ul class="bl">
+        <li>Имя и профессия — как персонажа знают в мире и чем он занимается в альтернативном начале XX века.</li>
+        <li>Внешность и возраст (возраст влияет на бюджет очков и на вероятность стартовых следов).</li>
+        <li>Отличительные черты.</li>
+        <li>Происхождение: место рождения, социальный статус, культурная и национальная принадлежность.</li>
+      </ul>
+      <div class="sh3">Формирующий опыт</div>
+      <ul class="bl">
+        <li>Ключевые события: служба, конфликты, научные открытия, утраты, находки, встречи с влиятельными людьми.</li>
+        <li>Текущая ситуация: что привело к моменту начала игры, каковы обстоятельства, ресурсы и ближайшие устремления.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="sh3" style="margin-top:2px">Сеть связей</div>
+      <ul class="bl">
+        <li>Личные отношения: друзья, семья, наставники, соперники, враги — и что они значат для персонажа.</li>
+        <li>Организации: Великие Дома, академии, тайные общества, гильдии, Храмы, криминальные группы.</li>
+      </ul>
+      <div class="sh3">Мотивация и конфликты</div>
+      <ul class="bl">
+        <li>Цели и долгосрочные амбиции: власть, знание, искупление, богатство, защита близких, изменение мира.</li>
+        <li>Страхи и ограничения: что вызывает глубокий страх и какие факторы сдерживают героя.</li>
+      </ul>
+      <div class="sh3">Согласование</div>
+      <ul class="bl">
+        <li>Места, организации и события соответствуют канону партии или версии Мастера.</li>
+        <li>Проговорены связи с другими персонажами.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note"><b>Почему это не «флейвор ради флейвора».</b> В Arbor Echo биография — рабочий инструмент.
+  Общий эпизод с целью даёт −2 к сложности входа в Изнанку; общая среда (школа, Храм, Дом, полк, цех) — −1;
+  общий язык — 0. Персонаж без связей платит за ту же работу больше. Тёмный стигмат вообще невозможно получить
+  без действующей патологии, а светлый — без фундаментального просветления, то есть без пережитого перелома.</div>
+
+  <div class="pg-foot">Arbor Echo · Создание персонажа · CC BY-NC 4.0 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="157160797077742725242d557278747c793b767a78">[email&#160;protected]</a></div>
+</section>
+
+<!-- ============ ШАГ 2 ============ -->
+<section class="page" id="s2">
+  <div class="pg-head"><div class="hl">
+    <span class="k">Бюджет</span><span class="title long">Шаг 2 · Возраст: очки и обязательные следы</span>
+  </div><span class="pgn">3 / 14</span></div>
+
+  <p class="txt">Возраст — единственное решение на этом шаге, но оно задаёт сразу три вещи: сколько очков
+  можно вложить, сколько из них уходит в Здоровье, и обязан ли персонаж прийти в игру со следами прожитых лет.
+  Точный возраст лучше назвать сразу: границы в двух таблицах книги не совпадают.</p>
+
+  <table class="tb">
+    <tr><th>Точный возраст<br>(Приложение 2)</th><th>Категория</th><th>Свободные<br>очки</th><th>Очки<br>Здоровья</th>
+        <th>Стартовые следы</th><th>Просветления</th></tr>
+    <tr><td class="rh">10–14</td><td>Юный</td><td class="o">19–26</td><td>9</td><td>—</td><td class="L">получать легко</td></tr>
+    <tr><td class="rh">15–19</td><td>Юный</td><td class="o">27–40</td><td>8</td><td>—</td><td class="L">получать легко</td></tr>
+    <tr><td class="rh">20–24</td><td>Молодой</td><td class="o">27–40</td><td>8</td><td>—</td><td class="L">психика сохраняет гибкость</td></tr>
+    <tr><td class="rh">25–34</td><td>Молодой</td><td class="o">42–51</td><td>7</td><td>—</td><td class="L">обычный порядок</td></tr>
+    <tr><td class="rh">35–44</td><td>Зрелый</td><td class="o">51–56</td><td>6</td><td class="L">становятся вероятными</td><td class="L">получать сложнее</td></tr>
+    <tr><td class="rh">45–50</td><td>Зрелый</td><td class="o">57–59</td><td>5</td><td class="L">становятся вероятными</td><td class="L">получать сложнее</td></tr>
+    <tr><td class="rh">51–54</td><td>Пожилой</td><td class="o">57–59</td><td>5</td><td class="L"><b>обязательны</b></td><td class="L">только в экстремальных случаях</td></tr>
+    <tr><td class="rh">55–64</td><td>Пожилой</td><td class="o">59</td><td>4</td><td class="L"><b>обязательны</b></td><td class="L">только в экстремальных случаях</td></tr>
+    <tr><td class="rh">65–74</td><td>Пожилой</td><td class="o">59–58</td><td>3</td><td class="L"><b>обязательны</b></td><td class="L">только в экстремальных случаях</td></tr>
+    <tr><td class="rh">75–84</td><td>Пожилой</td><td class="o">58–56</td><td>2</td><td class="L"><b>обязательны</b></td><td class="L">только в экстремальных случаях</td></tr>
+  </table>
+
+  <div class="sh3">Как читать эту таблицу</div>
+  <ul class="bl">
+    <li><b>Свободные очки</b> распределяются куда угодно, кроме навыков аспекта Здоровья.</li>
+    <li><b>Очки Здоровья</b> — отдельный пул: Нейромоторика, Гомеостаз, Метаболизм. Они же входят
+        в Порог биоагрессивности, поэтому модифицированному персонажу нужен запас именно здесь.</li>
+    <li><b>Диапазон</b> («19–26», «42–51») — не случайность: конкретное число в пределах строки
+        назначает Мастер либо группа, обычно исходя из того, насколько насыщенным было прошлое героя.
+        Если решения нет, берите середину и не спорьте.</li>
+    <li><b>Обязательные следы Пожилого</b> должны отражать уникальный жизненный путь, профессию и пережитые
+        испытания. Если Игрок не отметил их при создании, Мастер вправе добавить их до начала игры.</li>
+    <li><b>Пулы Изнанки в этой таблице нет.</b> Он появляется только если Мастер признал персонажа одаренным
+        и считается отдельно. → шаг 7</li>
+  </ul>
+
+  <div class="note"><b>Практический вывод.</b> Молодой персонаж (25–34) с 42–51 очком — самая удобная точка старта:
+  бюджета уже хватает на два-три сильных аспекта, при этом следы ещё не обязательны, а Просветления берутся
+  в нормальном темпе. Пожилой персонаж сильнее на бумаге (57–59 очков), но приходит в игру с обязательными
+  штрафами и почти закрытым доступом к Просветлениям — то есть его развитие идёт медленнее.</div>
+
+  <div class="pg-foot">Arbor Echo · Создание персонажа · CC BY-NC 4.0 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2642534a4344471416171e66414b474f4a0845494b">[email&#160;protected]</a></div>
+</section>
+
+<!-- ============ ШАГ 3 ============ -->
+<section class="page" id="s3">
+  <div class="pg-head"><div class="hl">
+    <span class="k">Устройство</span><span class="title long">Шаг 3 · Как устроен лист: 5 → 16 → 48</span>
+  </div><span class="pgn">4 / 14</span></div>
+
+  <p class="txt">Прежде чем распределять очки, нужно понять форму сосуда. В Arbor Echo пять характеристик,
+  они делятся на шестнадцать аспектов, в каждом аспекте ровно три навыка — всего сорок восемь навыков.
+  Очки вкладываются только в навыки; аспекты и характеристики не заполняются, а вычисляются.</p>
+
+  <table class="tb">
+    <tr><th>Характеристика</th><th>Аспектов</th><th>Навыков</th><th>Аспекты</th><th>Что это даёт персонажу</th></tr>
+    <tr><td class="rh">Эрудиция</td><td>6</td><td>18</td><td class="L">Культурология · Медицина · Физика · Биология · Химия · Математика</td><td class="L">Рабочие модели: без них магия Материи не знает, что именно деформировать. Входит в лимит Гейсов.</td></tr>
+    <tr><td class="rh">Воля</td><td>2</td><td>6</td><td class="L">Самоконтроль · Изнанка</td><td class="L">ОД, лимит и скорость восстановления Платонов, дальность ауры, лимит Гейсов.</td></tr>
+    <tr><td class="rh">Харизма</td><td>3</td><td>9</td><td class="L">Эмпатия · Лидерство · Дипломатия</td><td class="L">Социальные сцены, Чтение замысла, часть заклинаний Ауры (Подавление, Абсорбция).</td></tr>
+    <tr><td class="rh">Телосложение</td><td>3</td><td>9</td><td class="L">Сила · Здоровье · Моторика</td><td class="L">ОД, Порог биоагрессивности, перенос травм, Лимит Платонов.</td></tr>
+    <tr><td class="rh">Восприятие</td><td>2</td><td>6</td><td class="L">Дистанционное · Контактное</td><td class="L">ОД (лучший аспект), опорные навыки Ауры, Интероцепция для игнорирования боли.</td></tr>
+  </table>
+
+  <div class="sh3">Три колонки листа</div>
+  <div class="cards c3">
+    <div class="card"><div class="cn">ИЗН</div>
+      <div class="cr"><i>Что это</i><span>Первичное значение — то, во что вы вкладываете очки.</span></div>
+      <div class="cr"><i>Потолок</i><span>5 при создании, 10 по ходу игры. Потолок считается до бонусов: аспект, характеристика, модификации, Просветления и Гейсы добавляются поверх него.</span></div>
+      <div class="cr"><i>Особенность</i><span>Лист подсвечивает значение выше 5 оранжевым — это сигнал, что цифра вне стартового потолка.</span></div>
+    </div>
+    <div class="card"><div class="cn">ЗС</div>
+      <div class="cr"><i>Что это</i><span>Значение следа: бонусы и штрафы от Просветлений, Гейсов, модификаций и травм.</span></div>
+      <div class="cr"><i>Как работает</i><span>Прибавляется к итогу и влияет ровно на один навык: аспект и характеристику не пересчитывает.</span></div>
+      <div class="cr"><i>Нюанс</i><span>Некоторые следы по правилам применяются к первичному значению — тогда их пишут в ИЗН. → шаг 6</span></div>
+    </div>
+    <div class="card"><div class="cn">РЗН</div>
+      <div class="cr"><i>Что это</i><span>Результирующее значение — то, что реально идёт в бросок.</span></div>
+      <div class="cr"><i>Формула</i><span>ИЗН + аспект + характеристика + ЗС, округление один раз.</span></div>
+      <div class="cr"><i>Итог</i><span>Бросок проверки: 2d6 + сумма РЗН всех навыков, участвующих в проверке, против сложности.</span></div>
+    </div>
+  </div>
+
+  <div class="f"><span class="fl">Порядок вычисления</span><br>
+    <span class="fe">аспект</span> = среднее арифметическое трёх его навыков<br>
+    <span class="fe">характеристика</span> = среднее арифметическое входящих в неё аспектов<br>
+    <span class="fe">РЗН навыка</span> = первичное + аспект + характеристика + ЗС<br>
+    <span class="fd">Округления по дороге нет: величина аспекта идёт в характеристику как есть, величина характеристики —
+    в РЗН как есть. Округляются один раз РЗН навыков и все вторичные характеристики (0,5 и выше — вверх).
+    В интерфейсе аспекты и характеристики показываются с точностью до двух знаков — для справки, в расчёт идёт полное значение.</span></div>
+
+  <div class="sh3">Два изолированных пула</div>
+  <ul class="bl">
+    <li><b>Здоровье</b> (Нейромоторика, Гомеостаз, Метаболизм) заполняется из отдельного пула очков,
+        а не из свободных. Этот же аспект входит в Порог биоагрессивности и в Лимит Платонов.</li>
+    <li><b>Изнанка</b> (Материя, Менталистика, Архитектоника) свободными очками не заполняется вообще.
+        Единственные два пути: Просветления по ходу игры или стартовая одаренность, которую выдаёт Мастер. → шаг 7</li>
+    <li><b>Все остальные 42 навыка</b> — куда угодно в пределах бюджета и потолка 5.</li>
+  </ul>
+
+  <div class="note"><b>Следствие, о котором часто забывают.</b> Навык с нулевым первичным значением не равен нулю
+  в броске: он получает аспект и характеристику. У «Инженера-практика» из примера Менталистика с ИЗН 0
+  имеет РЗН 4, а Атлетика с ИЗН 0 — РЗН 3. Поэтому пустые навыки в прокачанной характеристике —
+  не дыра, а дешёвый фон: персонаж «немного понимает» во всём, что относится к его ремеслу.</div>
+
+  <div class="pg-foot">Arbor Echo · Создание персонажа · CC BY-NC 4.0 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="debaabb2bbbcbfeceeefe69eb9b3bfb7b2f0bdb1b3">[email&#160;protected]</a></div>
+</section>
+
+<!-- ============ ШАГ 4 ============ -->
+<section class="page" id="s4">
+  <div class="pg-head"><div class="hl">
+    <span class="k">Распределение</span><span class="title long">Шаг 4 · Куда вложить очки</span>
+  </div><span class="pgn">5 / 14</span></div>
+
+  <div class="sh3">Порядок действий</div>
+  <ol class="nl">
+    <li><b>Выпишите бюджет</b> из шага 2: свободные очки и очки Здоровья отдельно.</li>
+    <li><b>Назначьте 2–3 несущих аспекта</b> — то, чем персонаж зарабатывает на жизнь.
+        В каждый навык такого аспекта кладите 3–5 очков.</li>
+    <li><b>Добавьте один-два поддерживающих аспекта</b> по 1–3 очка в навык: это то, чем герой
+        занимается попутно (восприятие для наблюдателя, моторика для хирурга, самоконтроль для мага).</li>
+    <li><b>Заполните Здоровье</b> из своего пула. Ориентир: 4–6 очков, если модификаций не планируется,
+        и столько, сколько получится, если планируются — порог биоагрессивности считается именно отсюда.</li>
+    <li><b>Потратьте 1–2 очка на характерную деталь</b>: Вкус, Обоняние, Обман, История, Визуальная культура.
+        Это самые дешёвые очки в игре — они почти ничего не решают в бою, но делают персонажа живым
+        и регулярно дают легальный повод для проверки.</li>
+    <li><b>Проверьте потолок</b>: ни одного первичного значения выше 5, Изнанка пуста (или заполнена
+        только из пула одаренности).</li>
+  </ol>
+
+  <div class="sh3">Арифметика вложений: одинаковые очки дают разный результат</div>
+  <p class="txt">Характеристика — среднее её аспектов, поэтому вклад одного аспекта размазывается тем сильнее,
+  чем аспектов больше. Пятнадцать очков, вложенные в один аспект, дают навыкам этого аспекта разное РЗН
+  в зависимости от того, в какой характеристике он живёт:</p>
+
+  <table class="tb">
+    <tr><th>Характеристика</th><th>Аспектов в ней</th><th>Аспект после 15 очков</th><th>Характеристика</th><th>РЗН каждого навыка</th></tr>
+    <tr><td class="rh">Воля</td><td>2</td><td>5,00</td><td>2,50</td><td class="g"><b>13</b></td></tr>
+    <tr><td class="rh">Восприятие</td><td>2</td><td>5,00</td><td>2,50</td><td class="g"><b>13</b></td></tr>
+    <tr><td class="rh">Телосложение</td><td>3</td><td>5,00</td><td>1,67</td><td class="o"><b>12</b></td></tr>
+    <tr><td class="rh">Харизма</td><td>3</td><td>5,00</td><td>1,67</td><td class="o"><b>12</b></td></tr>
+    <tr><td class="rh">Эрудиция</td><td>6</td><td>5,00</td><td>0,83</td><td class="r"><b>11</b></td></tr>
+  </table>
+
+  <p class="txt">Это не значит, что Эрудиция «плохая». Она компенсирует разбавление шириной: восемнадцать навыков —
+  это восемнадцать легальных опорных навыков для заклинаний Материи и огромное число комбинаций для проверок,
+  а сумма аспектов Эрудиции входит в лимит Гейсов и в скорость их установки. Просто высокий одиночный результат
+  в Эрудиции обходится дороже, чем в Воле.</p>
+
+  <div class="sh3">Потолок одиночного навыка на старте</div>
+  <p class="txt">Первичное значение ограничено пятью очками, поэтому любой по-настоящему высокий РЗН на старте
+  делается только через аспект и характеристику. Вот максимум, который физически достижим, если вложить
+  в характеристику весь бюджет молодого персонажа (42 очка, пул Здоровья 7, пул Изнанки 6):</p>
+
+  <table class="tb">
+    <tr><th>Характеристика</th><th>Максимальный РЗН</th><th>Сколько свободных очков съедает</th><th>Что ограничивает</th></tr>
+    <tr><td class="rh">Восприятие</td><td class="g">15</td><td>30</td><td class="L">Только бюджет: 6 навыков по 5 закрывают характеристику на 5,00.</td></tr>
+    <tr><td class="rh">Харизма</td><td class="g">15</td><td>42</td><td class="L">Весь бюджет без остатка — на остальное очков не остаётся.</td></tr>
+    <tr><td class="rh">Воля</td><td class="o">14 <span style="color:var(--dim)">(13 без одаренности)</span></td><td>15 + пул Изнанки</td><td class="L">Аспект Изнанки на старте не поднимается выше 2,00: пул 2–6 очков, не более 3 в навык. Характеристику выше 3,50 не собрать.</td></tr>
+    <tr><td class="rh">Телосложение</td><td class="o">14</td><td>30 + пул Здоровья</td><td class="L">Здоровье заполняется только из своего пула, и он мал (7 очков у молодого).</td></tr>
+    <tr><td class="rh">Эрудиция</td><td class="r">12 <span style="color:var(--dim)">(13 от 51 очка)</span></td><td>весь бюджет</td><td class="L">Шесть аспектов: каждый незаполненный утягивает характеристику вниз на одну шестую.</td></tr>
+  </table>
+
+  <div class="note"><b>Читать с осторожностью.</b> Это потолки «всё в одну характеристику», а не рекомендация.
+  Персонаж с РЗН 15 в одном навыке и нулями во всём остальном провалит любую проверку вне своей темы
+  и не соберёт ни одного заклинания выше первой ступени. Рабочая норма старта — два-три навыка с РЗН 8–11
+  и широкая середина 4–6.</div>
+
+  <div class="sh3">Три приёма, которые стоит использовать сознательно</div>
+  <ul class="bl">
+    <li><b>Заполняйте аспект целиком, если он несущий.</b> Третий навык аспекта почти всегда пригодится
+        как опорный для заклинания или как второе слагаемое совместной проверки, а его первичные очки
+        поднимают РЗН всех трёх.</li>
+    <li><b>Держите в уме ОД.</b> Очки действий считаются от аспекта Самоконтроля, аспекта Моторики и лучшего
+        аспекта Восприятия. Это три разные характеристики — то есть боеспособный персонаж обязан держать
+        минимум по одному аспекту в Воле, Телосложении и Восприятии. Чистый «кабинетный» эрудит получает
+        мало ОД и ходит последним.</li>
+    <li><b>Не забывайте про Интероцепцию.</b> Она нужна для игнорирования боли (Самообладание + Интероцепция
+        против Сл 7/11/15) и входит в описание одаренности как интероцептивная регуляция. Одно-два очка
+        сюда почти всегда окупаются.</li>
+  </ul>
+
+  <div class="pg-foot">Arbor Echo · Создание персонажа · CC BY-NC 4.0 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e4809188818685d6d4d5dca48389858d88ca878b89">[email&#160;protected]</a></div>
+</section>
+
+<!-- ============ ШАГ 5 ============ -->
+<section class="page" id="s5">
+  <div class="pg-head"><div class="hl">
+    <span class="k">Производные</span><span class="title long">Шаг 5 · Вторичные характеристики</span>
+  </div><span class="pgn">6 / 14</span></div>
+
+  <p class="txt">Их не вводят вручную: лист считает всё сам. Но смотреть на них нужно до того, как распределение
+  очков будет окончательно зафиксировано, — потому что именно они определяют, сколько персонаж успевает за раунд,
+  сколько магии в него помещается и сколько улучшений выдержит его тело.</p>
+
+  <div class="f"><span class="fl">Очки действий (ОД)</span> = 2 + Самоконтроль + Моторика + лучший аспект Восприятия<br>
+    <span class="fd">Самоконтроль и Моторика — аспекты (Воля и Телосложение), Восприятие — лучший из двух аспектов:
+    Дистанционное или Контактное. Формула берёт неокруглённые значения, округляется только итог.</span></div>
+  <div class="f"><span class="fl">Порог биоагрессивности</span> = сумма первичных навыков Здоровья + аспект Силы<br>
+    <span class="fd">Единственная вторичная характеристика, которая считает сумму первичных значений, а не аспект.
+    Следы, написанные в первичные значения Здоровья, снижают порог напрямую.</span></div>
+  <div class="f"><span class="fl">Лимит Платонов</span> = Самоконтроль × 5 + Здоровье × 2<br>
+    <span class="fl">Скорость восстановления</span> = Самоконтроль × 3 + Здоровье Платонов в сутки<br>
+    <span class="fl">Дальность поля ауры</span> = (Изнанка + Самоконтроль) × текущий запас ÷ максимальный, в метрах<br>
+    <span class="fd">Дальность сжимается вместе с запасом: на половине Платонов она ровно вдвое короче.</span></div>
+  <div class="f"><span class="fl">Максимум Гейсов</span> = (сумма аспектов Эрудиции и Воли) ÷ 3<br>
+    <span class="fl">Время внедрения одного Гейса</span> = (сумма аспектов Эрудиции и Воли) ÷ (Архитектоника ÷ 2) часов<br>
+    <span class="fd">Округление до целых, но не меньше часа. При Архитектонике 0 знаменатель равен единице —
+    «правило молчит для тех, кто этим не занимается». Удаление Гейса требует втрое больших усилий.</span></div>
+
+  <div class="sh3">Что это значит за столом</div>
+  <table class="tb">
+    <tr><th style="width:22%">Параметр</th><th>Типичный старт</th><th>Последствия</th></tr>
+    <tr><td class="rh">ОД</td><td class="o">7–9</td><td class="L">Определяют порядок хода: ходят по убыванию ОД, при равенстве приоритет у персонажей Игроков. Простые действия стоят 0 ОД, проверки Эрудиции, Харизмы и Восприятия — 1, остальные или сложные — 1–2, совместная проверка — сумму стоимостей задействованных навыков. Неистраченные ОД не переносятся, но переходят в резерв реакций.</td></tr>
+    <tr><td class="rh">Порог биоагрессивности</td><td class="o">7–11</td><td class="L">Сколько модификаций тело выдержит без последствий. Превышение даёт патологии на сумму превышения и проверку функционирования перед каждой активной заявкой: Сл = 2 + 2 × единиц превышения, чистые 2d6 без навыков и модификаторов.</td></tr>
+    <tr><td class="rh">Лимит Платонов</td><td class="o">15–21</td><td class="L">Сколько магии помещается в персонажа. Базовый расход заклинания — 1 ОД = 1 Платон, но шаблоны стоят 2–4 Платона, а Телепортация и Ядерный распад — по 4 Платона за единицу массы. Стартовый маг делает несколько серьёзных заклинаний в день, а не в сцену.</td></tr>
+    <tr><td class="rh">Дальность ауры</td><td class="o">3–6 м</td><td class="L">Заклинание возникает и действует только в пределах ауры. Всё, что дальше, требует Дистанционного контроля, Диффузии, Сонастройки или стигмата как выносной точки границы.</td></tr>
+    <tr><td class="rh">Максимум Гейсов</td><td class="o">1–3</td><td class="L">Лимит на всего персонажа, а не на заклинание. Баллы Гейсов идут в бросок заклинания и снижают сложность вызова, но сужают множество допустимых применений.</td></tr>
+  </table>
+
+  <div class="sh3">Проверьте себя по таблице шансов</div>
+  <p class="txt">Бросок — 2d6 плюс сумма РЗН участвующих навыков против сложности. Шкала сложностей:
+  Простое 5, Стандартное 9, Сложное 13, Экспертное 17, Легендарное 21. Автоматический успех — если
+  сложность не превышает РЗН + 5: нет неопределённости, нет броска. Вот сколько нужно на кубах
+  и каков шанс это выбросить:</p>
+
+  <table class="tb">
+    <tr><th>Нужно на 2d6</th><td class="dash">2+</td><td class="dash">3+</td><td class="dash">4+</td><td class="dash">5+</td><td class="dash">6+</td><td class="dash">7+</td><td class="dash">8+</td><td class="dash">9+</td><td class="dash">10+</td><td class="dash">11+</td><td class="dash">12+</td></tr>
+    <tr><td class="rh">Шанс</td><td>100%</td><td>97%</td><td>92%</td><td>83%</td><td>72%</td><td>58%</td><td>42%</td><td>28%</td><td>17%</td><td>8%</td><td>3%</td></tr>
+  </table>
+
+  <p class="txt">Пользоваться просто: нужное на кубах = сложность − сумма РЗН. Примеры для стартового персонажа:
+  РЗН 8 против Сложного (13) — нужно 5+, то есть 83%. РЗН 6 против Сложного — нужно 7+, то есть 58%.
+  РЗН 4 против Стандартного (9) — нужно 5+, 83%. Отсюда практическое правило: держите хотя бы три-четыре
+  навыка с РЗН 8 и выше, иначе половина бытовых задач партии будет висеть на монетке.</p>
+
+  <div class="note"><b>Многонавыковые проверки дороже, чем кажутся.</b> Итоговая сложность считается как
+  (желаемая − 7) × количество навыков + 7: Сложное (13) на три навыка превращается в 25, Легендарное (21)
+  на шесть навыков — в 91. При этом стоимость в ОД равна сумме стоимостей всех задействованных навыков.
+  Широкое действие наказано дважды, поэтому заявки лучше держать узкими — это стоит отразить и в шаблонах
+  действий на шаге 8.</div>
+
+  <div class="pg-foot">Arbor Echo · Создание персонажа · CC BY-NC 4.0 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="284c5d444d4a491a181910684f45494144064b4745">[email&#160;protected]</a></div>
+</section>
+
+<!-- ============ ШАГ 6 ============ -->
+<section class="page" id="s6">
+  <div class="pg-head"><div class="hl">
+    <span class="k">След Я</span><span class="title long">Шаг 6 · Стартовые следы</span>
+  </div><span class="pgn">7 / 14</span></div>
+
+  <p class="txt">След Я — устойчивое изменение, которое остаётся с персонажем после события. На старте их может
+  не быть вовсе, и это нормально. Но от 35 лет они становятся вероятными, от 51 — обязательными, и вот там
+ 这一步 превращается из украшения в требование правил.</p>
+
+  <div class="sh3">Четыре вида стартового следа</div>
+  <table class="tb">
+    <tr><th>Вид</th><th>Что даёт</th><th>Кому подходит</th></tr>
+    <tr><td class="rh">Травма и её последствие</td><td class="L">Штраф к одному из навыков Здоровья и, после тяжёлой травмы, −1 навсегда к специализированному навыку пораженной зоны.</td><td class="L">Солдаты, рабочие, врачи фронтовой медицины, cualquiera с опасной профессией.</td></tr>
+    <tr><td class="rh">Патология</td><td class="L">Постоянный фон (штрафы) плюс риск обострения в сценах, которые давят на её оси напряжения.</td><td class="L">Персонажам 35+; единственный законный источник тёмного стигмата.</td></tr>
+    <tr><td class="rh">Просветление</td><td class="L">Малое: +1 к навыку. Фундаментальное: +1 к аспекту. Единственный легальный способ поднять Изнанку в игре.</td><td class="L">Тем, кто пережил перелом; на старте — только по согласованию с Мастером.</td></tr>
+    <tr><td class="rh">Модификация</td><td class="L">Пассивный бонус 2 × Биоагрессивность на навыки, активная заявка раз в сцену, побочный штраф и триггер, давление на Порог биоагрессивности.</td><td class="L">Военным, артелям, слугам Домов. В первой партии лучше не совмещать с магией.</td></tr>
+  </table>
+
+  <div class="sh3">Карточка патологии: формат и арифметика</div>
+  <div class="f"><span class="fl">Степень</span> = сумма модулей пассивных штрафов (от 1 до 6)<br>
+    <span class="fl">Порог триггера</span> = 6 − Степень<br>
+    <span class="fl">Обострение срабатывает</span>, если сумма оценок по релевантным осям ≥ порога триггера<br>
+    <span class="fd">Оси оцениваются от 1 до 3: <b>Нагрузка</b> (сцена требует работы поврежденной функции сверх емкости),
+    <b>Среда</b> (обстановка нарушает условия стабильности), <b>Аффект</b> (эмоциональное давление, резонирующее с травмой).
+    В карточке задано подмножество осей — считаются только они.
+    Мощность кризиса: степень 1–2 → легкая травма, 3–4 → средняя, 5–6 → тяжелая.</span></div>
+
+  <div class="cards">
+    <div class="card"><div class="cn">Гангрена · степень 5</div>
+      <div class="cr"><i>Фон</i><span>−1 Здоровье, ограничение функции пораженной зоны (моторика −2 при её использовании)</span></div>
+      <div class="cr"><i>Напряжение</i><span>Нагрузка, Среда</span></div>
+      <div class="cr"><i>Порог</i><span>6 − 5 = 1: обострение почти неизбежно в любой грязной или тяжёлой сцене</span></div>
+      <div class="cr"><i>Обострение</i><span>Разрушение тканей, гной, усиление боли — тяжелая соматическая травма; нужна срочная помощь или ампутация</span></div>
+    </div>
+    <div class="card"><div class="cn">Посттравматический тремор · степень 1</div>
+      <div class="cr"><i>Фон</i><span>−1 Точная моторика (дрожь в конечностях)</span></div>
+      <div class="cr"><i>Напряжение</i><span>Нагрузка, Аффект</span></div>
+      <div class="cr"><i>Порог</i><span>6 − 1 = 5: нужен почти максимальный накал сцены</span></div>
+      <div class="cr"><i>Обострение</i><span>Руки выходят из-под контроля, точные манипуляции невозможны — легкая соматическая травма</span></div>
+    </div>
+    <div class="card"><div class="cn">Ожирение · степень 2</div>
+      <div class="cr"><i>Фон</i><span>−1 Метаболизм, −1 Выносливость</span></div>
+      <div class="cr"><i>Напряжение</i><span>Нагрузка, Среда</span></div>
+      <div class="cr"><i>Порог</i><span>6 − 2 = 4</span></div>
+      <div class="cr"><i>Обострение</i><span>Одышка, спазм, потеря возможности двигаться — легкая соматическая травма</span></div>
+    </div>
+    <div class="card"><div class="cn">Имплантация бредовой системы · степень 1</div>
+      <div class="cr"><i>Фон</i><span>−1 Чтение замысла, +1 Убеждение при навязывании своей системы</span></div>
+      <div class="cr"><i>Напряжение</i><span>Нагрузка, Аффект</span></div>
+      <div class="cr"><i>Порог</i><span>5</span></div>
+      <div class="cr"><i>Обострение</i><span>Утрата контакта с реальностью, интерпретация событий через фиксированную идею — легкая психическая травма</span></div>
+    </div>
+  </div>
+
+  <div class="sh3">Травма как стартовый след: справочные числа</div>
+  <table class="tb">
+    <tr><th>Степень</th><th>Штраф к Здоровью</th><th>Лечение, Сл</th><th>Восстановление</th><th>Срочность</th></tr>
+    <tr><td class="rh">Легкая</td><td>−1</td><td>10</td><td>4 дня</td><td class="dash">—</td></tr>
+    <tr><td class="rh">Средняя</td><td>−2</td><td>14</td><td>9 дней</td><td>4 + Метаболизм раундов</td></tr>
+    <tr><td class="rh">Тяжелая</td><td>−3</td><td>18</td><td>16 дней</td><td>2 + Метаболизм раундов; после лечения −1 навсегда</td></tr>
+    <tr><td class="rh">Критическая</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td>Смерть; помочь может только чудо</td></tr>
+  </table>
+  <ul class="bl">
+    <li><b>Локализации</b>: Голова → Концентрация; Торс → Выносливость; Руки → Точная моторика;
+        Ноги → Общая моторика; Органы чувств → соответствующий навык Восприятия;
+        Внутренние органы → дополнительно Здоровье, всегда −1 независимо от степени, и +2 к сложности лечения.</li>
+    <li><b>Лечение</b> — одна проверка лечащего: операция требует его Анатомии и Метаболизма пациента,
+        медикаментозное лечение — его Биохимии и Гомеостаза пациента. Провал ухудшает травму.</li>
+    <li><b>Срок восстановления</b> = базовая длительность × коэффициент, где
+        коэффициент = 1,5 − (Метаболизм + Гомеостаз + модификатор условий лечения) × 0,05.
+        Условия: игнорирование или перегрузка −2, неоптимальный режим −1, нейтральные 0,
+        постельный режим и уход +1, специализированная помощь +2. В период восстановления действуют
+        штрафы как у легкой травмы.</li>
+    <li><b>Игнорирование боли</b>: Самообладание + Интероцепция против Сл 7 / 11 / 15 по степени.
+        Каждая повторная попытка в сцене добавляет +1 к сложности. Штрафы от травмы это не отменяет.</li>
+  </ul>
+
+  <div class="note"><b>Пример расчёта.</b> У «Полевого хирурга» из примера ниже Метаболизм 7 и Гомеостаз 6.
+  Коэффициент при нейтральных условиях: 1,5 − 13 × 0,05 = 0,85, то есть средняя травма заживает
+  за 9 × 0,85 ≈ 8 дней вместо 9, а при специализированной помощи (+2) — за 9 × 0,75 ≈ 7 дней.
+  Сильное Здоровье буквально экономит игровое время.</div>
+
+  <div class="sh3">Модификация как стартовый след: карточка</div>
+  <table class="tb">
+    <tr><th style="width:24%">Поле</th><th>Что писать</th></tr>
+    <tr><td class="rh">Тип</td><td class="L">Биологическая (органы, клетки, ДНК, гормоны; в сеттинге исторически получается через Хашаш) или кибернетическая (хирургическая замена частей тела механикой и электроникой).</td></tr>
+    <tr><td class="rh">Биоагрессивность</td><td class="L">От 1 до 5: мощность и конфликт с организмом. Каждая единица давит на Порог биоагрессивности.</td></tr>
+    <tr><td class="rh">Бонус</td><td class="L">Пассивный: усиливает навыки на сумму, равную удвоенной Биоагрессивности (БА 4 → до +8, распределить по навыкам).</td></tr>
+    <tr><td class="rh">Активная заявка</td><td class="L">Уникальное действие, доступное 1 раз за сцену. БА 1–2: нужно совпадение двух жёстких условий, эффект слабый или узкий. БА 3: одно значимое условие. БА 4–5: активируется в любой момент, эффект масштабный или разрушительный.</td></tr>
+    <tr><td class="rh">Штраф</td><td class="L">Зеркало силы: минус к навыкам, равный Биоагрессивности. Биомодификации вычитают из первичных значений, кибермодификации — из результирующих.</td></tr>
+    <tr><td class="rh">Триггер</td><td class="L">Условие, при котором Игрок обязан озвучить проявление дефекта.</td></tr>
+    <tr><td class="rh">Адаптация</td><td class="L">Кибернетические: от нескольких сцен до нескольких дней. Биологические: от нескольких дней до месяцев. В этот период бонусов нет, негативный эффект есть.</td></tr>
+  </table>
+
+  <div class="card good" style="margin:2px 0 8px"><div class="cn">Пример из книги: Гиперфазная мускулатура</div>
+    <div class="cr"><i>Тип / БА</i><span>Биологическая · 4</span></div>
+    <div class="cr"><i>Бонус</i><span>+6 к Атлетике, +2 к Выносливости (всего 8 = 2 × 4)</span></div>
+    <div class="cr"><i>Активная заявка</i><span>Физическое действие с «разрушительным» результатом: пробить, сбросить, вытолкнуть. Доступно в любой момент (БА 4–5)</span></div>
+    <div class="cr"><i>Штраф</i><span>−2 к Контролю, −2 к Осязанию (всего 4 = БА)</span></div>
+    <div class="cr"><i>Триггер</i><span>После активации — средняя травма связок</span></div>
+  </div>
+
+  <ul class="bl">
+    <li><b>Хашаш как путь к биомодификации.</b> Раз в неделю тренировка в состоянии эмоциональной
+        нестабильности: проверка Концентрация + Самообладание, сложность 7 + Биоагрессивность желаемой
+        модификации и далее +1 с каждым разом. Когда число успехов достигает Биоагрессивности — модификация
+        закрепляется. Провал ведёт к наркозависимости без преимуществ и случайным мутациям.</li>
+    <li><b>Превышение порога.</b> Если сумма Биоагрессивностей больше Порога биоагрессивности, Мастер выдаёт
+        патологии на величину превышения, связанные с модификацией с наибольшей Биоагрессивностью, и перед каждой
+        активной заявкой бросается проверка функционирования: Сл = 2 + 2 × единиц превышения, чистые 2d6.
+        Ниже на 1 — не сработало; на 2–3 — заблокировано до ремонта или лечения (Анатомия или Биохимия, Сл 13);
+        на 4 и более — тяжелая травма зоны модификации.</li>
+  </ul>
+
+  <div class="sh3">Куда именно писать след: в ИЗН или в ЗС</div>
+  <p class="txt">Книга формулирует правило так: патологии, просветления, долгосрочные последствия травм
+  и биологические модификации применяются к первичным значениям навыков, а немедленные штрафы травм
+  и кибернетические модификации — к результирующим. Разница не косметическая: след в первичном значении
+  пересчитывает аспект, характеристику, соседние навыки и вторичные характеристики.</p>
+
+  <table class="tb">
+    <tr><th>Один и тот же штраф −1 Гомеостазу у «Полевого хирурга»</th><th>Порог БА</th><th>Лимит Платонов</th><th>Соседние навыки</th></tr>
+    <tr><td class="rh">Записан в первичное значение (ИЗН 2 → 1)</td><td class="r">9 → 8</td><td class="r">18 → 17</td><td class="L">Аспект Здоровья 2,33 → 2,00, Телосложение 2,11 → 2,00</td></tr>
+    <tr><td class="rh">Записан в значение следа (ЗС −1)</td><td class="g">9</td><td class="g">18</td><td class="L">Ничего, кроме РЗН самого Гомеостаза</td></tr>
+  </table>
+  <p class="txt">На крупных следах расхождение видно и в бою: −3 Точной моторике, записанные в первичное значение,
+  дают ОД 7 и снимают по единице со всех трёх навыков Моторики (Точная 4, Общая 4, Проприоцепция 5);
+  те же −3 в ЗС снимают один навык (Точная 5), а ОД остаётся 8 и Проприоцепция держит 6.</p>
+
+  <div class="note"><b>Практика.</b> На старте разница часто съедается округлением, но на нескольких следах
+  и на патологиях высокой степени она накапливается. Заведите привычку спрашивать у Мастера для каждой карточки:
+  «это в первичное или в результирующее?» — и писать след в соответствующую колонку листа.
+  Бонус к аспекту от фундаментального Просветления автоматический лист не считает вовсе: договоритесь,
+  как его вести, до начала игры.</div>
+
+  <div class="pg-foot">Arbor Echo · Создание персонажа · CC BY-NC 4.0 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2b4f5e474e494a191b1a136b4c464a424705484446">[email&#160;protected]</a></div>
+</section>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
