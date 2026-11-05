@@ -32,7 +32,7 @@
       .pg-head { display:flex; align-items:baseline; justify-content:space-between; border-bottom:2px solid var(--gold); padding-bottom:5px; margin-bottom:6px; }
       .pg-head .title { font-family:var(--head); font-size:18px; letter-spacing:.1em; color:var(--gold); }
       .pg-head .sub { font-family:var(--mono); font-size:9px; color:var(--dim); letter-spacing:.14em; text-transform:uppercase; }
-      .hint { font-style:italic; color:var(--dim); font-size:11px; margin:0 0 8px; padding-left:6px; border-left:2px solid var(--border); line-height:1.4; }
+      .hint { font-style:italic; color:var(--dim); font-size:11px; margin:0 0 8px; padding-left:6px; border-left:2px solid var(--border); line-height:1.5; }
       #list { display:block; }
       .empty { color:var(--dim); font-style:italic; padding:14px; text-align:center; border:1px dashed var(--border); border-radius:3px; }
       .inj { background:var(--bg2); border:1px solid var(--border); border-radius:3px; padding:8px 10px; margin-bottom:8px; }
@@ -42,15 +42,23 @@
       .sel:focus { border-color:var(--green); outline:none; }
       .sel.name { flex:1 1 240px; color:var(--gold); }
       .sel.deg { color:var(--red); }
-      .urg { font-family:var(--mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--orange); border:1px solid var(--orange); border-radius:2px; padding:2px 5px; white-space:nowrap; }
       .rm { font-family:var(--mono); font-size:18px; line-height:1; color:var(--dim); cursor:pointer; padding:0 4px; margin-left:auto; user-select:none; }
       .rm:hover { color:var(--red); }
+      .flags { display:flex; flex-wrap:wrap; gap:16px; margin-top:7px; }
+      .chk { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; color:var(--dim); cursor:pointer; user-select:none; }
+      .chk input { accent-color:var(--gold); width:14px; height:14px; cursor:pointer; }
+      .chk.on { color:var(--gold); }
       .skills { margin-top:7px; display:flex; flex-wrap:wrap; gap:6px; }
       .chip { display:inline-flex; gap:6px; align-items:baseline; background:var(--bg3); border:1px solid var(--border); border-radius:2px; padding:3px 8px; font-family:var(--mono); font-size:12px; }
       .chip b { color:var(--red); font-size:13px; }
       .chip.lethal { border-color:var(--red); }
       .chip.lethal b { color:var(--red); }
       .chip.tot b { color:var(--gold); }
+      .chip.fix { border-color:var(--orange); }
+      .chip.fix b { color:var(--orange); }
+      .treat { margin-top:7px; padding-top:6px; border-top:1px dotted var(--border); font-family:var(--mono); font-size:11px; color:var(--dim); line-height:1.5; }
+      .treat b { color:var(--gold); }
+      .treat .mtd { color:var(--text); }
       .add { width:100%; background:transparent; border:1px dashed var(--gold); border-radius:3px; color:var(--gold); font-family:var(--head); font-size:13px; letter-spacing:.08em; padding:9px; cursor:pointer; margin:4px 0 12px; }
       .add:hover { background:rgba(200,168,75,.08); color:var(--green); border-color:var(--green); }
       .p { background:var(--bg2); border:1px solid var(--border); border-radius:2px; padding:8px 10px; }
@@ -67,6 +75,9 @@
         .chip { background:#eee; border-color:#bbb; color:#000; }
         .chip b { color:#900; }
         .chip.tot b { color:#000; }
+        .treat { color:#333; border-top-color:#ccc; }
+        .treat b, .treat .mtd { color:#000; }
+        .chk { color:#000; }
         .pg-foot { border-top-color:#ccc; }
         .hint { color:#333; }
       }
@@ -89,7 +100,7 @@
         <div class="title">Arbor Echo · Травмы</div>
         <div class="sub">Лист персонажа</div>
       </div>
-      <p class="hint">Нажмите «+ Добавить травму». Выберите название — под него автоматически подтянутся навыки, по которым идёт штраф. Степень меняет размер штрафа. Критическая травма — летальна.</p>
+      <p class="hint">Нажмите «+ Добавить травму». Выберите название — под него автоматически подтянутся навыки, по которым идёт штраф. Степень меняет размер штрафа. Отметьте «Внутренние органы», чтобы добавить штраф −1 к Здоровью поверх основной травмы. Критическая травма — летальна.</p>
 
       <div id="list"></div>
 
@@ -107,56 +118,64 @@
       (function () {
         'use strict';
 
-        // --- Данные: локализация -> специализированный навык ---
+        // --- Локализация -> специализированный навык (обычная часть тела) ---
         var LOC = {
-          head:    { label: 'Голова',              skill: 'Концентрация' },
-          torso:   { label: 'Торс',                skill: 'Выносливость' },
-          arms:    { label: 'Руки',                skill: 'Точная моторика' },
-          legs:    { label: 'Ноги',                skill: 'Общая моторика' },
-          eyes:    { label: 'Глаза',               skill: 'Зрение' },
-          ears:    { label: 'Уши',                 skill: 'Слух' },
-          nose:    { label: 'Нос',                 skill: 'Обоняние' },
-          tongue:  { label: 'Язык',                skill: 'Вкус' },
-          skin:    { label: 'Кожа',                skill: 'Осязание' },
-          organs:  { label: 'Внутренние органы',   skill: 'Здоровье', internal: true }
+          head:   { label: 'Голова',    skill: 'Концентрация' },
+          torso:  { label: 'Торс',      skill: 'Выносливость' },
+          arms:   { label: 'Руки',      skill: 'Точная моторика' },
+          legs:   { label: 'Ноги',      skill: 'Общая моторика' },
+          eyes:   { label: 'Глаза',     skill: 'Зрение' },
+          ears:   { label: 'Уши',       skill: 'Слух' },
+          nose:   { label: 'Нос',       skill: 'Обоняние' },
+          tongue: { label: 'Язык',      skill: 'Вкус' },
+          skin:   { label: 'Кожа',      skill: 'Осязание' }
         };
 
         // --- Степени и размер штрафа ---
         var DEG = [
-          { key: 'light',   label: 'Лёгкая',       val: 1,     tag: '−1' },
-          { key: 'medium',  label: 'Средняя',      val: 2,     tag: '−2' },
-          { key: 'heavy',   label: 'Тяжёлая',      val: 3,     tag: '−3' },
-          { key: 'critical',label: 'Критическая',  val: null,  tag: 'летально' }
+          { key: 'light',   label: 'Лёгкая',      val: 1,     tag: '−1' },
+          { key: 'medium',  label: 'Средняя',     val: 2,     tag: '−2' },
+          { key: 'heavy',   label: 'Тяжёлая',     val: 3,     tag: '−3' },
+          { key: 'critical',label: 'Критическая', val: null,  tag: 'летально' }
         ];
+
+        // --- Сложность лечения по степени (+2 при повреждении внутренних органов) ---
+        function treatDifficulty(degKey, internal) {
+          if (degKey === 'critical') return null;
+          var base = { light: 10, medium: 14, heavy: 18 }[degKey];
+          return base + (internal ? 2 : 0);
+        }
 
         // --- Список травм по категориям ---
         // physical: health — навык Здоровья (по таблице правил), loc — локализация по умолчанию
         // somatic:  aspect — навык Самоконтроля, loc — локализация
         // mental:   aspect — навык Самоконтроля, scene — связанный навык (по сцене)
+        // internal — по умолчанию ли травма задевает внутренние органы (флажок, меняется вручную)
+        // urgent   — по умолчанию ли травма срочная (флажок, меняется вручную)
         var INJURIES = {
           physical: [
-            { name: 'Перелом',                    health: 'Нейромоторика', loc: 'legs' },
-            { name: 'Разрыв связок',              health: 'Нейромоторика', loc: 'arms' },
-            { name: 'Контузия',                   health: 'Нейромоторика', loc: 'head' },
-            { name: 'Удар током',                 health: 'Нейромоторика', loc: 'torso', urgent: true },
-            { name: 'Ожог',                       health: 'Метаболизм',    loc: 'arms' },
-            { name: 'Обморожение',                health: 'Метаболизм',    loc: 'legs' },
-            { name: 'Кровотечение',               health: 'Метаболизм',    loc: 'torso', urgent: true },
-            { name: 'Анафилактический шок',       health: 'Гомеостаз',     loc: 'organs', urgent: true },
-            { name: 'Солнечный удар',             health: 'Гомеостаз',     loc: 'head' },
-            { name: 'Разрыв печёночной артерии',  health: 'Метаболизм',    loc: 'organs', urgent: true, extra: ['Нейромоторика', 'Выносливость'] }
+            { name: 'Перелом',                   health: 'Нейромоторика', loc: 'legs' },
+            { name: 'Разрыв связок',             health: 'Нейромоторика', loc: 'arms' },
+            { name: 'Контузия',                  health: 'Нейромоторика', loc: 'head' },
+            { name: 'Удар током',                health: 'Нейромоторика', loc: 'torso', urgent: true },
+            { name: 'Ожог',                      health: 'Метаболизм',    loc: 'arms' },
+            { name: 'Обморожение',               health: 'Метаболизм',    loc: 'legs' },
+            { name: 'Кровотечение',              health: 'Метаболизм',    loc: 'torso', urgent: true },
+            { name: 'Анафилактический шок',      health: 'Гомеостаз',     loc: 'torso', internal: true, urgent: true },
+            { name: 'Солнечный удар',            health: 'Гомеостаз',     loc: 'head' },
+            { name: 'Разрыв печёночной артерии', health: 'Метаболизм',    loc: 'torso', internal: true, urgent: true, extra: ['Нейромоторика', 'Выносливость'] }
           ],
           mental: [
-            { name: 'Информационный перегруз',    aspect: 'Самообладание', scene: 'Концентрация' },
-            { name: 'Паническая атака',           aspect: 'Самообладание', scene: 'Выносливость' },
-            { name: 'Диссоциация',                aspect: 'Концентрация',  scene: 'Интероцепция' },
-            { name: 'Навязчивый образ',           aspect: 'Независимость', scene: 'Чтение замысла' }
+            { name: 'Информационный перегруз',   aspect: 'Самообладание', scene: 'Концентрация' },
+            { name: 'Паническая атака',          aspect: 'Самообладание', scene: 'Выносливость' },
+            { name: 'Диссоциация',               aspect: 'Концентрация',  scene: 'Интероцепция' },
+            { name: 'Навязчивый образ',          aspect: 'Независимость', scene: 'Чтение замысла' }
           ],
           somatic: [
-            { name: 'Психогенный тремор',         aspect: 'Самообладание', loc: 'arms' },
-            { name: 'Комок в горле',              aspect: 'Самообладание', loc: 'torso' },
-            { name: 'Гипервентиляция',            aspect: 'Концентрация',  loc: 'torso' },
-            { name: 'Мышечный спазм',             aspect: 'Самообладание', loc: 'legs' }
+            { name: 'Психогенный тремор',        aspect: 'Самообладание', loc: 'arms' },
+            { name: 'Комок в горле',             aspect: 'Самообладание', loc: 'torso' },
+            { name: 'Гипервентиляция',           aspect: 'Концентрация',  loc: 'torso' },
+            { name: 'Мышечный спазм',            aspect: 'Самообладание', loc: 'legs' }
           ]
         };
 
@@ -196,8 +215,8 @@
           return DEG[0];
         }
 
-        // Навыки, по которым идёт штраф, с учётом степени
-        function affected(def, locKey, degVal, critical) {
+        // Навыки, по которым идёт штраф, с учётом степени и флага «внутренние органы»
+        function affected(def, locKey, degVal, critical, internal) {
           var out = [];
           if (def.cat === 'mental') {
             out.push({ skill: def.aspect, mode: 'deg' });
@@ -206,17 +225,16 @@
             var base = def.health || def.aspect;
             if (base) out.push({ skill: base, mode: 'deg' });
             var L = LOC[locKey];
-            if (L) {
-              if (L.internal) out.push({ skill: 'Здоровье', mode: 'fix1' });
-              else out.push({ skill: L.skill, mode: 'deg' });
-            }
+            if (L) out.push({ skill: L.skill, mode: 'deg' });
           }
+          if (internal) out.push({ skill: 'Здоровье', mode: 'fix1' }); // поверх основной травмы, всегда −1
           if (def.extra) for (var i = 0; i < def.extra.length; i++) out.push({ skill: def.extra[i], mode: 'deg' });
 
           for (var j = 0; j < out.length; j++) {
             if (critical) out[j].val = '✕';
-            else if (out[j].mode === 'fix1') out[j].val = 1;     // внутренние органы: всегда −1
+            else if (out[j].mode === 'fix1') out[j].val = 1;
             else out[j].val = degVal;
+            out[j].fix = (out[j].mode === 'fix1');
           }
           return out;
         }
@@ -261,21 +279,36 @@
           if (!def) return '';
           var d = degOf(e.degree);
           var crit = (d.val === null);
-          var aff = affected(def, e.loc, d.val, crit);
+          var aff = affected(def, e.loc, d.val, crit, !!e.internal);
           return aff.map(function (a) {
-            var cls = (a.val === '✕') ? 'chip lethal' : 'chip';
+            var cls = (a.val === '✕') ? 'chip lethal' : (a.fix ? 'chip fix' : 'chip');
             var sign = (a.val === '✕') ? '✕' : ('−' + a.val);
             return '<span class="' + cls + '">' + esc(a.skill) + ' <b>' + sign + '</b></span>';
           }).join('');
         }
 
+        function treatHTML(e) {
+          var d = degOf(e.degree);
+          if (d.val === null) return '<span class="dim">Критическая — лечение невозможно</span>';
+          var diff = treatDifficulty(e.degree, !!e.internal);
+          return 'Лечение: <b>Сл ' + diff + '</b> · ' +
+            '<span class="mtd">Операция (Анатомия + Метаболизм)</span> · ' +
+            '<span class="mtd">Медикаментозное (Биохимия + Гомеостаз)</span>';
+        }
+
         function cardHTML(e, i) {
           var def = findDef(e.name);
           if (!def) return '';
-          var urgent = def.urgent ? '<span class="urg">срочн.</span>' : '';
           var second = (def.cat === 'mental')
             ? '<select class="sel scene" data-f="scene">' + sceneOptions(e.scene) + '</select>'
             : '<select class="sel loc" data-f="loc">' + locOptions(e.loc) + '</select>';
+
+          var flags = '';
+          if (def.cat !== 'mental') {
+            flags += '<label class="chk' + (e.internal ? ' on' : '') + '"><input type="checkbox" data-f="internal"' + (e.internal ? ' checked' : '') + '> Внутренние органы</label>';
+          }
+          flags += '<label class="chk' + (e.urgent ? ' on' : '') + '"><input type="checkbox" data-f="urgent"' + (e.urgent ? ' checked' : '') + '> Срочная</label>';
+
           return '' +
             '<div class="inj" data-i="' + i + '">' +
               '<div class="top">' +
@@ -283,10 +316,11 @@
                 '<select class="sel name" data-f="name">' + nameOptions(e.name) + '</select>' +
                 second +
                 '<select class="sel deg" data-f="degree">' + degOptions(e.degree) + '</select>' +
-                urgent +
                 '<span class="rm" data-rm="' + i + '" title="Удалить">×</span>' +
               '</div>' +
+              '<div class="flags">' + flags + '</div>' +
               '<div class="skills">' + chipsHTML(e) + '</div>' +
+              '<div class="treat">' + treatHTML(e) + '</div>' +
             '</div>';
         }
 
@@ -309,7 +343,7 @@
             if (!def) return;
             var d = degOf(e.degree);
             if (d.val === null) return; // критическая — летальна, не суммируем
-            affected(def, e.loc, d.val, false).forEach(function (a) {
+            affected(def, e.loc, d.val, false, !!e.internal).forEach(function (a) {
               if (typeof a.val === 'number') totals[a.skill] = (totals[a.skill] || 0) + a.val;
             });
           });
@@ -317,7 +351,8 @@
           var el = document.getElementById('summary');
           if (!keys.length) { el.innerHTML = '<span class="dim">— нет активных штрафов —</span>'; return; }
           el.innerHTML = keys.map(function (k) {
-            return '<span class="chip tot"><b>−' + totals[k] + '</b> ' + esc(k) + '</span>';
+            var fix = (k === 'Здоровье');
+            return '<span class="chip tot' + (fix ? ' fix' : '') + '"><b>−' + totals[k] + '</b> ' + esc(k) + '</span>';
           }).join('');
         }
 
@@ -336,7 +371,11 @@
 
         function addInjury() {
           var first = INJURIES.physical[0];
-          entries.push({ name: first.name, cat: 'physical', degree: 'light', loc: first.loc || 'head', scene: 'Концентрация' });
+          entries.push({
+            name: first.name, cat: 'physical', degree: 'light',
+            loc: first.loc || 'torso', scene: 'Концентрация',
+            internal: !!first.internal, urgent: !!first.urgent
+          });
           render();
         }
 
@@ -348,17 +387,20 @@
           if (!card) return;
           var i = +card.dataset.i;
           var f = t.dataset.f;
+          var val = (t.type === 'checkbox') ? t.checked : t.value;
           if (f === 'name') {
             var def = findDef(t.value);
             entries[i] = {
               name: t.value,
               cat: def.cat,
               degree: entries[i].degree || 'light',
-              loc: def.loc || 'head',
-              scene: def.scene || 'Концентрация'
+              loc: def.loc || 'torso',
+              scene: def.scene || 'Концентрация',
+              internal: !!def.internal,
+              urgent: !!def.urgent
             };
           } else {
-            entries[i][f] = t.value;
+            entries[i][f] = val;
           }
           render();
         });
