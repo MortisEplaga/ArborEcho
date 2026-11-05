@@ -26,6 +26,10 @@
       nav button:hover { color:var(--gold); border-color:var(--border); }
       nav button.active { color:var(--gold); border-color:var(--gold); background:rgba(200,168,75,.09); }
       .spacer { flex:1 1 auto; }
+      .sledy-btn { font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); background:rgba(200,168,75,.10); border:1px solid var(--gold); border-radius:2px; padding:4px 10px; cursor:pointer; white-space:nowrap; }
+      .sledy-btn:hover { color:var(--green); border-color:var(--green); }
+      .sledy-btn.active { color:var(--bg); background:var(--gold); border-color:var(--gold); }
+      .sledy-btn span { font-size:12px; letter-spacing:0; }
       .tools { display:flex; align-items:center; gap:6px; }
       #q { width:150px; background:#0b0e0a; border:1px solid var(--border); border-radius:2px; color:var(--text); font-family:var(--mono); font-size:10px; padding:4px 7px; outline:none; }
       #q:focus { border-color:var(--green); }
@@ -41,6 +45,7 @@
     <header>
       <span class="brand">Arbor Echo</span>
       <nav id="nav"></nav>
+      <button type="button" id="b_sledy" class="sledy-btn" title="Панель следов: травмы, патологии, просветления, гейсы">Следы <span aria-hidden="true">→</span></button>
       <span class="spacer"></span>
       <span class="tools"><input id="q" type="search" placeholder="поиск в разделе" autocomplete="off" spellcheck="false"><span id="cnt" class="cnt"></span></span>
     </header>
@@ -2874,6 +2879,10 @@
           .toolbar { width:297mm; margin:0 auto 8px; display:flex; gap:6px; justify-content:flex-end; font-family:var(--mono); }
           .toolbar button { background:var(--bg3); color:var(--gold); border:1px solid var(--border); border-radius:2px; font-family:var(--head); font-size:9px; letter-spacing:.12em; text-transform:uppercase; padding:5px 10px; cursor:pointer; }
           .toolbar button:hover { border-color:var(--green); color:var(--green); }
+          .toolbar button.traces-toggle { order:-1; margin-right:auto; font-family:var(--head); font-size:11px; letter-spacing:.18em; text-transform:uppercase; padding:5px 13px; border-color:var(--gold); background:rgba(200,168,75,.08); }
+          .toolbar button.traces-toggle .tr-arrow { display:inline-block; margin-left:7px; font-family:var(--mono); font-size:13px; letter-spacing:0; transition:transform .24s ease; }
+          .toolbar button.traces-toggle.open .tr-arrow { transform:rotate(180deg); }
+          .toolbar button.traces-toggle:hover { border-color:var(--green); color:var(--green); }
           .page { width:297mm; min-height:210mm; margin:0 auto; background:var(--bg); padding:7mm 9mm 5mm; border:1px solid #2a3028; display:flex; flex-direction:column; gap:5px; }
           .pg-head { display:flex; align-items:baseline; justify-content:space-between; border-bottom:2px solid var(--gold); padding-bottom:5px; }
           .pg-head .title { font-family:var(--head); font-size:18px; letter-spacing:.1em; color:var(--gold); }
@@ -2947,7 +2956,8 @@
           <button type="button" id="b_export">Сохранить в файл<\/button>
           <button type="button" id="b_import">Загрузить из файла<\/button>
           <button type="button" id="b_reset">Очистить<\/button>
-          <button type="button" id="b_traumas">Травмы<\/button>
+          <!-- заголовок «Следы →»: под ним прячется весь сайдбар -->
+          <button type="button" id="b_traces" class="traces-toggle" aria-label="Следы →" aria-expanded="false" aria-controls="traces_drawer" title="Следы → открыть / скрыть">Следы <span class="tr-arrow" aria-hidden="true">→<\/span><\/button>
           <input type="file" id="f_import" accept="application/json,.json" hidden>
         <\/div>
         <div class="page">
@@ -3569,146 +3579,317 @@
           })();
         <\/script>
 
-<style id="trauma_style">
-  .trauma-drawer { position:fixed; top:0; right:0; height:100%; width:400px; max-width:94vw; background:var(--bg2); border-left:2px solid var(--gold); box-shadow:-10px 0 34px rgba(0,0,0,.55); transform:translateX(100%); transition:transform .22s ease; z-index:60; display:flex; flex-direction:column; padding:10px 11px; overflow:auto; font-family:var(--body); color:var(--text); }
-  .trauma-drawer.open { transform:translateX(0); }
-  .trauma-drawer * { box-sizing:border-box; }
-  .td-head { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--gold); padding-bottom:5px; margin-bottom:7px; }
+<style id="traces_style">
+  /* ===== панель «Следы →» ===== */
+  .traces-drawer { position:fixed; top:0; right:0; height:100%; width:440px; max-width:94vw; background:var(--bg2); border-left:2px solid var(--gold); box-shadow:-10px 0 34px rgba(0,0,0,.55); transform:translateX(100%); transition:transform .24s ease; z-index:60; display:flex; flex-direction:column; padding:10px 11px 14px; overflow:auto; font-family:var(--body); color:var(--text); }
+  .traces-drawer.open { transform:translateX(0); }
+  .traces-drawer * { box-sizing:border-box; }
+  .td-head { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--gold); padding-bottom:5px; margin-bottom:7px; flex:0 0 auto; }
   .td-title { font-family:var(--head); font-size:16px; letter-spacing:.1em; color:var(--gold); }
   .td-close { background:none; border:0; color:var(--dim); font-family:var(--mono); font-size:20px; line-height:1; cursor:pointer; }
   .td-close:hover { color:var(--red); }
   .td-hint { font-style:italic; color:var(--dim); font-size:10.5px; margin-bottom:8px; padding-left:6px; border-left:2px solid var(--border); line-height:1.45; }
-  #td_list { display:block; }
+
+  /* ===== раскрывающиеся зоны ===== */
+  .tx-sec { border:1px solid var(--border); border-radius:3px; background:var(--bg); margin-bottom:8px; overflow:hidden; }
+  .tx-sec-h { width:100%; display:flex; align-items:center; gap:8px; padding:8px 9px; background:var(--bg3); border:0; border-bottom:1px solid transparent; color:var(--gold); font-family:var(--head); font-size:12px; letter-spacing:.09em; text-transform:uppercase; cursor:pointer; text-align:left; }
+  .tx-sec-h:hover { color:var(--green); }
+  .tx-sec.open .tx-sec-h { border-bottom-color:var(--border); }
+  .tx-chev { display:inline-block; font-family:var(--mono); font-size:11px; color:var(--green); transition:transform .18s ease; transform:rotate(-90deg); }
+  .tx-sec.open .tx-chev { transform:rotate(0deg); }
+  .tx-badge { font-family:var(--mono); font-size:10px; color:var(--bg); background:var(--gold); border-radius:8px; padding:1px 6px; min-width:19px; text-align:center; }
+  .tx-sec-sum { margin-left:auto; font-family:var(--mono); font-size:10px; letter-spacing:0; text-transform:none; color:var(--teal); white-space:nowrap; }
+  .tx-sec-b { display:none; padding:9px; }
+  .tx-sec.open .tx-sec-b { display:block; }
+
+  /* ===== карточки ===== */
   .td-empty { color:var(--dim); font-style:italic; padding:12px; text-align:center; border:1px dashed var(--border); border-radius:3px; }
-  .td-inj { background:var(--bg); border:1px solid var(--border); border-radius:3px; padding:8px 9px; margin-bottom:8px; }
-  .td-inj .top { display:flex; flex-wrap:wrap; gap:7px; align-items:center; }
+  .td-inj,.tx-card { background:var(--bg2); border:1px solid var(--border); border-radius:3px; padding:8px 9px; margin-bottom:8px; }
+  .tx-card:last-child,.td-inj:last-child { margin-bottom:0; }
+  .top { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
   .td-idx { font-family:var(--mono); font-size:11px; color:var(--gold); min-width:18px; }
-  .td-sel { background:var(--bg3); color:var(--text); border:1px solid var(--border); border-radius:2px; padding:4px 6px; font-family:var(--mono); font-size:12px; max-width:300px; }
+  .td-sel { background:var(--bg3); color:var(--text); border:1px solid var(--border); border-radius:2px; padding:4px 6px; font-family:var(--mono); font-size:11.5px; max-width:100%; }
   .td-sel:focus { border-color:var(--green); outline:none; }
-  .td-sel.name { flex:1 1 200px; color:var(--gold); }
+  .td-sel.name { flex:1 1 150px; min-width:120px; color:var(--gold); font-family:var(--body); font-size:13px; }
   .td-sel.deg { color:var(--red); }
+  .tx-kind { color:var(--teal); }
+  .tx-col { padding:2px 4px; font-size:10.5px; color:var(--green); }
+  .tx-q { color:var(--gold); }
   .td-rm { font-family:var(--mono); font-size:18px; line-height:1; color:var(--dim); cursor:pointer; padding:0 3px; margin-left:auto; user-select:none; }
   .td-rm:hover { color:var(--red); }
-  .td-flags { display:flex; flex-wrap:wrap; gap:14px; margin-top:7px; }
+  .td-flags { display:flex; flex-wrap:wrap; gap:12px; margin-top:7px; }
   .td-chk { display:inline-flex; align-items:center; gap:5px; font-family:var(--mono); font-size:11px; color:var(--dim); cursor:pointer; user-select:none; }
   .td-chk input { accent-color:var(--gold); width:14px; height:14px; cursor:pointer; }
   .td-chk.on { color:var(--gold); }
-  .td-skills { margin-top:7px; display:flex; flex-wrap:wrap; gap:6px; }
-  .td-chip { display:inline-flex; gap:6px; align-items:baseline; background:var(--bg3); border:1px solid var(--border); border-radius:2px; padding:3px 8px; font-family:var(--mono); font-size:12px; }
-  .td-chip b { color:var(--red); font-size:13px; }
+  .td-skills,.tx-effect { margin-top:7px; display:flex; flex-wrap:wrap; gap:6px; }
+  .td-chip,.tx-chip { display:inline-flex; gap:5px; align-items:baseline; background:var(--bg3); border:1px solid var(--border); border-radius:2px; padding:3px 8px; font-family:var(--mono); font-size:11.5px; }
+  .td-chip b,.tx-chip b { color:var(--red); font-size:13px; }
+  .td-chip.pos b,.tx-chip.pos b { color:var(--green); }
+  .tx-chip i { font-style:normal; color:var(--gold); font-size:10px; }
   .td-chip.lethal { border-color:var(--red); }
-  .td-chip.lethal b { color:var(--red); }
   .td-chip.fix { border-color:var(--orange); }
   .td-chip.fix b { color:var(--orange); }
-  .td-treat { margin-top:7px; padding-top:6px; border-top:1px dotted var(--border); font-family:var(--mono); font-size:11px; color:var(--dim); line-height:1.5; }
+  .td-chip.stigma { color:var(--text); border-color:var(--gold); }
+  .td-treat,.tx-note { margin-top:7px; padding-top:6px; border-top:1px dotted var(--border); font-family:var(--mono); font-size:10.5px; color:var(--dim); line-height:1.5; }
   .td-treat b { color:var(--gold); }
   .td-treat .mtd { color:var(--text); }
-  .td-add { width:100%; background:transparent; border:1px dashed var(--gold); border-radius:3px; color:var(--gold); font-family:var(--head); font-size:13px; letter-spacing:.06em; padding:9px; cursor:pointer; margin:2px 0 10px; }
+  .tx-note { color:var(--orange); border-top:0; padding-top:2px; }
+  .td-add { width:100%; background:transparent; border:1px dashed var(--gold); border-radius:3px; color:var(--gold); font-family:var(--head); font-size:12px; letter-spacing:.06em; padding:8px; cursor:pointer; margin:8px 0 0; }
   .td-add:hover { background:rgba(200,168,75,.08); color:var(--green); border-color:var(--green); }
-  .td-panel { background:var(--bg); border:1px solid var(--border); border-radius:2px; padding:8px 9px; }
+
+  /* ===== строки модификаторов ===== */
+  .tx-sub { margin-top:7px; display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-family:var(--mono); font-size:10.5px; color:var(--dim); line-height:1.5; }
+  .tx-sub b { color:var(--gold); }
+  .tx-mods { margin-top:7px; display:flex; flex-direction:column; gap:5px; }
+  .tx-mod { display:flex; align-items:center; gap:6px; }
+  .tx-mod .tx-target { flex:1 1 auto; min-width:0; }
+  .tx-val { width:58px; flex:0 0 auto; background:var(--bg3); color:var(--teal); border:1px solid var(--border); border-radius:2px; padding:4px 5px; font-family:var(--mono); font-size:12px; text-align:center; outline:none; -moz-appearance:textfield; }
+  .tx-val::-webkit-outer-spin-button,.tx-val::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .tx-val:focus { border-color:var(--green); }
+  .tx-addmod { margin-top:6px; background:none; border:0; border-bottom:1px dotted var(--border); color:var(--green); font-family:var(--mono); font-size:10.5px; padding:2px 0; cursor:pointer; }
+  .tx-addmod:hover { color:var(--gold); }
+  .tx-stigma { margin-top:7px; padding-top:6px; border-top:1px dotted var(--border); display:flex; align-items:center; gap:7px; }
+  .tx-stigma label { font-family:var(--head); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); white-space:nowrap; }
+  .tx-text { flex:1; min-width:0; background:transparent; border:0; border-bottom:1px dotted var(--border); color:var(--text); font-family:var(--body); font-size:12.5px; padding:2px 3px; outline:none; }
+  .tx-text:focus { border-bottom-color:var(--green); }
+  .tx-stigmas { margin-top:8px; font-family:var(--mono); font-size:10.5px; color:var(--dim); line-height:1.7; }
+  .tx-stigmas b { color:var(--gold); }
+
+  /* ===== итог ===== */
+  .td-panel { background:var(--bg); border:1px solid var(--border); border-radius:2px; padding:8px 9px; margin-top:2px; flex:0 0 auto; }
   .td-st { font-family:var(--head); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); border-bottom:1px solid var(--border); padding-bottom:3px; margin:4px 0 6px; }
   .td-st::before { content:'▸ '; color:var(--green); }
   .td-sum { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
-  .td-apply { width:100%; margin-top:6px; background:var(--bg3); color:var(--gold); border:1px solid var(--border); border-radius:2px; font-family:var(--head); font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:7px; cursor:pointer; }
+  .tx-lab { font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin:2px 0 4px; }
+  .tx-totals { font-family:var(--mono); font-size:10.5px; color:var(--dim); margin:5px 0 2px; }
+  .tx-totals b { color:var(--gold); }
+  .td-apply,.td-clear { width:100%; margin-top:6px; background:var(--bg3); color:var(--gold); border:1px solid var(--border); border-radius:2px; font-family:var(--head); font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:7px; cursor:pointer; }
   .td-apply:hover { border-color:var(--green); color:var(--green); }
+  .td-clear { color:var(--dim); }
+  .td-clear:hover { border-color:var(--red); color:var(--red); }
   .td-dim { color:var(--dim); font-style:italic; }
-  @media print { .trauma-drawer { display:none !important; } }
+  @media print { .traces-drawer,.toolbar button.traces-toggle { display:none !important; } }
 <\/style>
 
-<div id="trauma_drawer" class="trauma-drawer">
+<div id="traces_drawer" class="traces-drawer" aria-hidden="true">
   <div class="td-head">
-    <span class="td-title">Травмы<\/span>
+    <span class="td-title">Следы<\/span>
     <button type="button" id="td_close" class="td-close" title="Закрыть">×<\/button>
   <\/div>
-  <div class="td-hint">Название → подтягиваются штрафуемые навыки. Степень меняет размер штрафа. «Внутренние органы» (только физические) добавляет −1 к навыку Здоровья поверх травмы. Тяжёлая травма может дать постоянное последствие (−1 к ИЗН). Штрафы сразу записываются в столбец ЗС, постоянные — в ИЗН.<\/div>
-  <div id="td_list"><\/div>
-  <button type="button" id="td_add" class="td-add">+ Добавить травму<\/button>
+  <div class="td-hint">Травмы, патологии, просветления и гейсы. Изменения сразу пишутся в столбцы ЗС / ИЗН листа. «−1 Здоровья» — это −1 к каждому из трёх навыков Здоровья (в сумме −3); так же работает любая группа или аспект: бонус/штраф применяется к каждому навыку внутри неё.<\/div>
+
+  <section class="tx-sec open" data-sec="traumas">
+    <button type="button" class="tx-sec-h" data-toggle="traumas" aria-expanded="true"><span class="tx-chev">▾<\/span><span>Травмы<\/span><span class="tx-badge" id="cnt_traumas">0<\/span><span class="tx-sec-sum" id="sum_traumas"><\/span><\/button>
+    <div class="tx-sec-b" id="sec_traumas">
+      <div class="td-hint">Название → подтягиваются штрафуемые навыки, степень меняет размер штрафа. «Внутренние органы» добавляет −1 Здоровья: −1 к Метаболизму, Гомеостазу и Нейромоторике (итого −3). Тяжёлая травма может дать постоянное последствие (−1 к ИЗН).<\/div>
+      <div id="td_list"><\/div>
+      <button type="button" id="td_add" class="td-add">+ Добавить травму<\/button>
+    <\/div>
+  <\/section>
+
+  <section class="tx-sec" data-sec="pathologies">
+    <button type="button" class="tx-sec-h" data-toggle="pathologies" aria-expanded="false"><span class="tx-chev">▾<\/span><span>Патологии<\/span><span class="tx-badge" id="cnt_path">0<\/span><span class="tx-sec-sum" id="sum_path"><\/span><\/button>
+    <div class="tx-sec-b" id="sec_pathologies">
+      <div class="td-hint">Название, тип, степень 1–6 и произвольные +/− к выбранным навыкам или группам. Физические патологии правят навыки Тела и Восприятия, психические — навыки Воли и Харизмы. Степень по правилам равна сумме модулей штрафов (с учётом раскрытия групп), но её можно задать вручную. Тёмный стигмат — предмет, закрепивший патологию.<\/div>
+      <div id="tp_list"><\/div>
+      <button type="button" id="tp_add" class="td-add">+ Добавить патологию<\/button>
+      <div class="tx-stigmas" id="tp_stigmas"><\/div>
+    <\/div>
+  <\/section>
+
+  <section class="tx-sec" data-sec="enlightenments">
+    <button type="button" class="tx-sec-h" data-toggle="enlightenments" aria-expanded="false"><span class="tx-chev">▾<\/span><span>Просветления<\/span><span class="tx-badge" id="cnt_light">0<\/span><span class="tx-sec-sum" id="sum_light"><\/span><\/button>
+    <div class="tx-sec-b" id="sec_enlightenments">
+      <div class="td-hint">Только бонусы к навыкам Воли и Харизмы. Малое просветление — +1 к одному навыку, Фундаментальное — +1 к аспекту (то есть +1 к каждому из трёх его навыков, итого +3). Светлый стигмат возникает из Фундаментального просветления.<\/div>
+      <div id="tl_list"><\/div>
+      <button type="button" id="tl_add" class="td-add">+ Добавить просветление<\/button>
+      <div class="tx-stigmas" id="tl_stigmas"><\/div>
+    <\/div>
+  <\/section>
+
+  <section class="tx-sec" data-sec="geases">
+    <button type="button" class="tx-sec-h" data-toggle="geases" aria-expanded="false"><span class="tx-chev">▾<\/span><span>Гейсы<\/span><span class="tx-badge" id="cnt_geas">0<\/span><span class="tx-sec-sum" id="sum_geas"><\/span><\/button>
+    <div class="tx-sec-b" id="sec_geases">
+      <div class="td-hint">Размер бонуса (1–2 балла сужения), тип вопроса и название заклинания. «Зачем» — четвёртая категория, уникальный Гейс светлого стигмата: +2 к броску. Баллы Гейсов идут к броску заклинания, а не в навыки листа, поэтому в ЗС не записываются.<\/div>
+      <div id="tg_list"><\/div>
+      <button type="button" id="tg_add" class="td-add">+ Добавить гейс<\/button>
+    <\/div>
+  <\/section>
+
   <div class="td-panel">
-    <div class="td-st">Суммарные штрафы (записаны в ЗС)<\/div>
-    <div id="td_summary" class="td-sum"><\/div>
-    <div class="td-st">Постоянные последствия (записаны в ИЗН)<\/div>
-    <div id="td_perm" class="td-sum"><\/div>
-    <button type="button" id="td_apply" class="td-apply">Перезаписать в лист (ЗС / ИЗН)<\/button>
+    <div class="td-st">Итого записано в лист<\/div>
+    <div class="tx-lab">ЗС · бонусы и штрафы следа<\/div>
+    <div id="tx_sum_zs" class="td-sum"><\/div>
+    <div class="tx-lab">ИЗН · первичные значения<\/div>
+    <div id="tx_sum_izn" class="td-sum"><\/div>
+    <div id="tx_totals" class="tx-totals"><\/div>
+    <button type="button" id="tx_apply" class="td-apply">Перезаписать в лист (ЗС / ИЗН)<\/button>
+    <button type="button" id="tx_clear" class="td-clear">Очистить все следы<\/button>
   <\/div>
 <\/div>
 
 <script>
 (function () {
   'use strict';
-  var KEY = 'arborEchoTraumas_v1';
+  var KEY = 'arborEchoTraces_v2';
+  var OLDKEY = 'arborEchoTraumas_v1';
 
-  // Локализация -> специализированный навык (обычная часть тела)
-  var LOC = {
-    head:   { label: 'Голова',    skill: 'Концентрация' },
-    torso:  { label: 'Торс',      skill: 'Выносливость' },
-    arms:   { label: 'Руки',      skill: 'Точная моторика' },
-    legs:   { label: 'Ноги',      skill: 'Общая моторика' },
-    eyes:   { label: 'Глаза',     skill: 'Зрение' },
-    ears:   { label: 'Уши',       skill: 'Слух' },
-    nose:   { label: 'Нос',       skill: 'Обоняние' },
-    tongue: { label: 'Язык',      skill: 'Вкус' },
-    skin:   { label: 'Кожа',      skill: 'Осязание' }
+  var CHAR = { er:'Эрудиция', te:'Тело', vo:'Воля', ha:'Харизма', pe:'Восприятие' };
+  var ASP = {
+    er_cult:'Культурология', er_med:'Медицина', er_phys:'Физика', er_bio:'Биология', er_chem:'Химия', er_math:'Математика',
+    te_str:'Сила', te_hp:'Здоровье', te_mot:'Моторика',
+    vo_izn:'Изнанка', vo_sk:'Самоконтроль',
+    ha_emp:'Эмпатия', ha_lead:'Лидерство', ha_dip:'Дипломатия',
+    pe_dist:'Дистанционное', pe_kont:'Контактное'
   };
+  var SCOPE_ASP = {
+    physical:['te_str','te_hp','te_mot','pe_dist','pe_kont'],
+    mental:['vo_izn','vo_sk','ha_emp','ha_lead','ha_dip'],
+    light:['vo_izn','vo_sk','ha_emp','ha_lead','ha_dip']
+  };
+  var SCOPE_CHAR = { physical:['te','pe'], mental:['vo','ha'], light:['vo','ha'] };
 
+  var LOC = {
+    head:{ label:'Голова', skill:'Концентрация' },
+    torso:{ label:'Торс', skill:'Выносливость' },
+    arms:{ label:'Руки', skill:'Точная моторика' },
+    legs:{ label:'Ноги', skill:'Общая моторика' },
+    eyes:{ label:'Глаза', skill:'Зрение' },
+    ears:{ label:'Уши', skill:'Слух' },
+    nose:{ label:'Нос', skill:'Обоняние' },
+    tongue:{ label:'Язык', skill:'Вкус' },
+    skin:{ label:'Кожа', skill:'Осязание' }
+  };
   var DEG = [
-    { key: 'light',   label: 'Лёгкая',      val: 1 },
-    { key: 'medium',  label: 'Средняя',     val: 2 },
-    { key: 'heavy',   label: 'Тяжёлая',     val: 3 },
-    { key: 'critical',label: 'Критическая', val: null }
+    { key:'light', label:'Лёгкая', val:1 },
+    { key:'medium', label:'Средняя', val:2 },
+    { key:'heavy', label:'Тяжёлая', val:3 },
+    { key:'critical', label:'Критическая', val:null }
   ];
-
-  function treatDifficulty(degKey, internal) {
-    if (degKey === 'critical') return null;
-    var base = { light: 10, medium: 14, heavy: 18 }[degKey];
-    return base + (internal ? 2 : 0);
-  }
-
-  // Физические: health — навык Здоровья; Соматические/Психические: aspect — навык Самоконтроля
   var INJURIES = {
-    physical: [
-      { name: 'Перелом',                   health: 'Нейромоторика', loc: 'legs' },
-      { name: 'Разрыв связок',             health: 'Нейромоторика', loc: 'arms' },
-      { name: 'Контузия',                  health: 'Нейромоторика', loc: 'head' },
-      { name: 'Удар током',                health: 'Нейромоторика', loc: 'torso', urgent: true },
-      { name: 'Ожог',                      health: 'Метаболизм',    loc: 'arms' },
-      { name: 'Обморожение',               health: 'Метаболизм',    loc: 'legs' },
-      { name: 'Кровотечение',              health: 'Метаболизм',    loc: 'torso', urgent: true },
-      { name: 'Анафилактический шок',      health: 'Гомеостаз',     loc: 'torso', internal: true, urgent: true },
-      { name: 'Солнечный удар',            health: 'Гомеостаз',     loc: 'head' },
-      { name: 'Разрыв печёночной артерии', health: 'Метаболизм',    loc: 'torso', internal: true, urgent: true, extra: ['Нейромоторика', 'Выносливость'] }
+    physical:[
+      { name:'Перелом', health:'Нейромоторика', loc:'legs' },
+      { name:'Разрыв связок', health:'Нейромоторика', loc:'arms' },
+      { name:'Контузия', health:'Нейромоторика', loc:'head' },
+      { name:'Удар током', health:'Нейромоторика', loc:'torso', urgent:true },
+      { name:'Ожог', health:'Метаболизм', loc:'arms' },
+      { name:'Обморожение', health:'Метаболизм', loc:'legs' },
+      { name:'Кровотечение', health:'Метаболизм', loc:'torso', urgent:true },
+      { name:'Анафилактический шок', health:'Гомеостаз', loc:'torso', internal:true, urgent:true },
+      { name:'Солнечный удар', health:'Гомеостаз', loc:'head' },
+      { name:'Разрыв печёночной артерии', health:'Метаболизм', loc:'torso', internal:true, urgent:true, extra:['Нейромоторика','Выносливость'] }
     ],
-    mental: [
-      { name: 'Информационный перегруз',   aspect: 'Самообладание', scene: 'Концентрация' },
-      { name: 'Паническая атака',          aspect: 'Самообладание', scene: 'Выносливость' },
-      { name: 'Диссоциация',               aspect: 'Концентрация',  scene: 'Интероцепция' },
-      { name: 'Навязчивый образ',          aspect: 'Независимость', scene: 'Чтение замысла' }
+    mental:[
+      { name:'Информационный перегруз', aspect:'Самообладание', scene:'Концентрация' },
+      { name:'Паническая атака', aspect:'Самообладание', scene:'Выносливость' },
+      { name:'Диссоциация', aspect:'Концентрация', scene:'Интероцепция' },
+      { name:'Навязчивый образ', aspect:'Независимость', scene:'Чтение замысла' }
     ],
-    somatic: [
-      { name: 'Психогенный тремор',        aspect: 'Самообладание', loc: 'arms' },
-      { name: 'Комок в горле',             aspect: 'Самообладание', loc: 'torso' },
-      { name: 'Гипервентиляция',           aspect: 'Концентрация',  loc: 'torso' },
-      { name: 'Мышечный спазм',            aspect: 'Самообладание', loc: 'legs' }
+    somatic:[
+      { name:'Психогенный тремор', aspect:'Самообладание', loc:'arms' },
+      { name:'Комок в горле', aspect:'Самообладание', loc:'torso' },
+      { name:'Гипервентиляция', aspect:'Концентрация', loc:'torso' },
+      { name:'Мышечный спазм', aspect:'Самообладание', loc:'legs' }
     ]
   };
 
-  var SKILLS = [
-    'Культурология','История','Визуальная культура','Лингвистика','Медицина','Нейрофизиология','Биохимия','Анатомия',
-    'Физика','Классическая физика','Электроморфизм','Квантовая теория','Биология','Генетика','Микроструктуры','Макроорганизмы',
-    'Химия','Реактивная химия','Синтетическая химия','Материаловедение','Математика','Формальный анализ','Теория вероятностей','Пространственная логика',
-    'Атлетика','Контроль','Выносливость','Метаболизм','Гомеостаз','Нейромоторика','Точная моторика','Общая моторика','Проприоцепция',
-    'Изнанка','Материя','Менталистика','Архитектоника','Концентрация','Самообладание','Независимость',
-    'Эмпатия','Манипулирование','Актёрство','Чтение замысла','Влияние','Администрирование','Чувство конфликта','Убеждение','Запугивание','Обман',
-    'Зрение','Слух','Обоняние','Интероцепция','Вкус','Осязание'
-  ];
-
-  var state = { traumas: [], applied: { zs: {}, izn: {} } };
+  var state = {
+    traumas:[], pathologies:[], enlightenments:[], geases:[],
+    applied:{ zs:{}, izn:{} },
+    open:{ traumas:true, pathologies:false, enlightenments:false, geases:false }
+  };
+  var ROWS = [], byN = {}, byName = {}, groupSkills = {};
+  var baseZS = {}, baseIZN = {}, firing = false;
 
   function $(id) { return document.getElementById(id); }
-  function num(v) { var n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : 0; }
-  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/<\/g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function num(v) { var n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(n) ? n : 0; }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/<\/g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function sign(v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v); }
+  function opts(pairs, sel) {
+    return pairs.map(function (p) {
+      return '<option value="' + esc(p[0]) + '"' + (String(p[0]) === String(sel) ? ' selected' : '') + '>' + esc(p[1]) + '<\/option>';
+    }).join('');
+  }
+  function sumMap(m) { var s = 0; Object.keys(m).forEach(function (k) { s += m[k]; }); return s; }
 
+  /* --- индекс навыков листа: имена берём прямо из строк таблицы --- */
+  function buildIndex() {
+    ROWS = []; byN = {}; byName = {}; groupSkills = {};
+    Array.prototype.forEach.call(document.querySelectorAll('tr[data-a]'), function (tr) {
+      var sk = tr.querySelector('td.sk');
+      if (!sk || tr.dataset.n == null) return;
+      var r = { n:tr.dataset.n, name:sk.textContent.trim(), a:tr.dataset.a, c:tr.dataset.c };
+      ROWS.push(r); byN[r.n] = r; byName[r.name] = r;
+      (groupSkills[r.a] = groupSkills[r.a] || []).push(r.name);
+      (groupSkills[r.c] = groupSkills[r.c] || []).push(r.name);
+    });
+  }
+  function cellOf(r, prefix) { return document.getElementById(prefix + r.n); }
+  function resolve(t) {
+    if (!t) return [];
+    if (t.indexOf('grp:') === 0) return groupSkills[t.slice(4)] || [];
+    if (t.indexOf('sk:') === 0) return byName[t.slice(3)] ? [t.slice(3)] : [];
+    return [];
+  }
+  function targetLabel(t) {
+    if (t.indexOf('grp:') === 0) {
+      var k = t.slice(4);
+      return (ASP[k] || CHAR[k] || k) + ' ×' + (groupSkills[k] || []).length;
+    }
+    if (t.indexOf('sk:') === 0) return t.slice(3);
+    return '—';
+  }
+  function targetOptions(scope, sel) {
+    var html = '<optgroup label="Группа / аспект (± каждому навыку)">';
+    (SCOPE_CHAR[scope] || []).forEach(function (k) {
+      html += '<option value="grp:' + k + '"' + (sel === 'grp:' + k ? ' selected' : '') + '>' + esc(CHAR[k] || k) + ' · ' + (groupSkills[k] || []).length + ' навыков<\/option>';
+    });
+    (SCOPE_ASP[scope] || []).forEach(function (k) {
+      html += '<option value="grp:' + k + '"' + (sel === 'grp:' + k ? ' selected' : '') + '>' + esc(ASP[k] || k) + ' · ' + (groupSkills[k] || []).length + ' навыка<\/option>';
+    });
+    html += '<\/optgroup><optgroup label="Отдельный навык">';
+    (SCOPE_ASP[scope] || []).forEach(function (k) {
+      (groupSkills[k] || []).forEach(function (sk) {
+        html += '<option value="sk:' + esc(sk) + '"' + (sel === 'sk:' + sk ? ' selected' : '') + '>' + esc(sk) + '<\/option>';
+      });
+    });
+    html += '<\/optgroup>';
+    return html;
+  }
+  function targetInScope(t, scope) {
+    if (!t) return false;
+    if (t.indexOf('grp:') === 0) {
+      var k = t.slice(4);
+      return (SCOPE_CHAR[scope] || []).indexOf(k) !== -1 || (SCOPE_ASP[scope] || []).indexOf(k) !== -1;
+    }
+    if (t.indexOf('sk:') === 0) {
+      var r = byName[t.slice(3)];
+      return !!r && (SCOPE_ASP[scope] || []).indexOf(r.a) !== -1;
+    }
+    return false;
+  }
+  function defaultTarget(kind) {
+    if (kind === 'physical') return 'grp:te_hp';
+    if (kind === 'mental') return 'grp:vo_sk';
+    if (kind === 'fundamental') return 'grp:vo_sk';
+    return 'sk:Самообладание';
+  }
+  function scopeOf(e, sec) { return sec === 'pathologies' ? e.kind : 'light'; }
+  function computedDegree(e) {
+    var s = 0;
+    (e.mods || []).forEach(function (m) {
+      var v = num(m.val);
+      if (v < 0) s += Math.abs(v) * Math.max(1, resolve(m.target).length);
+    });
+    return Math.max(1, Math.min(6, s));
+  }
+
+  /* --- травмы --- */
   function findDef(name) {
-    var cats = ['physical', 'mental', 'somatic'];
+    var cats = ['physical','mental','somatic'];
     for (var c = 0; c < cats.length; c++) {
       var arr = INJURIES[cats[c]];
       for (var i = 0; i < arr.length; i++) {
@@ -3723,50 +3904,46 @@
     return null;
   }
   function degOf(key) { for (var i = 0; i < DEG.length; i++) if (DEG[i].key === key) return DEG[i]; return DEG[0]; }
-
-  // Навыки со штрафом (немедленные -> ЗС). Внутренние органы (физика) добавляют −1 к навыку Здоровья поверх.
+  function treatDifficulty(degKey, internal) {
+    if (degKey === 'critical') return null;
+    return { light:10, medium:14, heavy:18 }[degKey] + (internal ? 2 : 0);
+  }
   function rawAffected(e) {
     var def = findDef(e.name); if (!def) return [];
     var d = degOf(e.degree), crit = (d.val === null), internal = !!e.internal && def.cat === 'physical';
     var out = [];
     if (def.cat === 'mental') {
-      out.push({ skill: def.aspect, m: 'deg' });
-      out.push({ skill: def.scene,  m: 'deg' });
+      out.push({ skill:def.aspect, m:'deg' });
+      out.push({ skill:def.scene, m:'deg' });
     } else {
       var base = def.health || def.aspect;
-      if (base) out.push({ skill: base, m: 'deg' });
-      var L = LOC[e.loc]; if (L) out.push({ skill: L.skill, m: 'deg' });
+      if (base) out.push({ skill:base, m:'deg' });
+      var L = LOC[e.loc]; if (L) out.push({ skill:L.skill, m:'deg' });
     }
-    if (internal) out.push({ skill: def.health, m: 'fix1' }); // дополнительно −1 к навыку Здоровья
-    if (def.extra) def.extra.forEach(function (s) { out.push({ skill: s, m: 'deg' }); });
-    out.forEach(function (a) {
-      if (crit) a.val = '✕';
-      else if (a.m === 'fix1') a.val = 1;
-      else a.val = d.val;
-    });
+    /* −1 Здоровья = −1 к КАЖДОМУ навыку Здоровья (в сумме −3) */
+    if (internal) (groupSkills.te_hp || []).forEach(function (s) { out.push({ skill:s, m:'fix1' }); });
+    if (def.extra) def.extra.forEach(function (s) { out.push({ skill:s, m:'deg' }); });
+    out.forEach(function (a) { a.val = crit ? '✕' : (a.m === 'fix1' ? 1 : d.val); });
     var merged = {};
     out.forEach(function (a) {
-      if (!merged[a.skill]) merged[a.skill] = { skill: a.skill, val: 0, fix: false };
-      merged[a.skill].val += (typeof a.val === 'number') ? a.val : 0;
+      if (!merged[a.skill]) merged[a.skill] = { skill:a.skill, val:0, fix:false, lethal:false };
+      if (a.val === '✕') merged[a.skill].lethal = true;
+      else merged[a.skill].val += a.val;
       if (a.m === 'fix1') merged[a.skill].fix = true;
     });
     return Object.keys(merged).map(function (k) { return merged[k]; });
   }
-
   function defaultPermSkill(e) {
     var def = findDef(e.name); if (!def) return 'Выносливость';
     if (def.cat === 'mental') return e.scene || def.aspect;
     var L = LOC[e.loc]; return (L && L.skill) || def.aspect || def.health;
   }
-
-  // --- option-списки ---
   function nameOptions(sel) {
-    var groups = [['physical', 'Физические травмы'], ['mental', 'Психические травмы'], ['somatic', 'Соматические травмы']];
+    var groups = [['physical','Физические травмы'],['mental','Психические травмы'],['somatic','Соматические травмы']];
     return groups.map(function (g) {
-      var o = INJURIES[g[0]].map(function (d) {
+      return '<optgroup label="' + g[1] + '">' + INJURIES[g[0]].map(function (d) {
         return '<option value="' + esc(d.name) + '"' + (d.name === sel ? ' selected' : '') + '>' + esc(d.name) + '<\/option>';
-      }).join('');
-      return '<optgroup label="' + g[1] + '">' + o + '<\/optgroup>';
+      }).join('') + '<\/optgroup>';
     }).join('');
   }
   function locOptions(sel) {
@@ -3774,9 +3951,9 @@
       return '<option value="' + k + '"' + (k === sel ? ' selected' : '') + '>' + esc(LOC[k].label) + '<\/option>';
     }).join('');
   }
-  function sceneOptions(sel) {
-    return SKILLS.map(function (s) {
-      return '<option value="' + esc(s) + '"' + (s === sel ? ' selected' : '') + '>' + esc(s) + '<\/option>';
+  function skillOptions(sel) {
+    return ROWS.map(function (r) {
+      return '<option value="' + esc(r.name) + '"' + (r.name === sel ? ' selected' : '') + '>' + esc(r.name) + '<\/option>';
     }).join('');
   }
   function degOptions(sel) {
@@ -3784,203 +3961,487 @@
       return '<option value="' + d.key + '"' + (d.key === sel ? ' selected' : '') + '>' + esc(d.label) + '<\/option>';
     }).join('');
   }
-  function permSkillOptions(sel) {
-    return SKILLS.map(function (s) {
-      return '<option value="' + esc(s) + '"' + (s === sel ? ' selected' : '') + '>' + esc(s) + '<\/option>';
-    }).join('');
-  }
-
   function chipsHTML(e) {
     return rawAffected(e).map(function (a) {
-      var cls = (a.val === '✕') ? 'td-chip lethal' : (a.fix ? 'td-chip fix' : 'td-chip');
-      var sign = (a.val === '✕') ? '✕' : ('−' + a.val);
-      return '<span class="' + cls + '">' + esc(a.skill) + ' <b>' + sign + '<\/b><\/span>';
+      var cls = a.lethal ? 'td-chip lethal' : (a.fix ? 'td-chip fix' : 'td-chip');
+      return '<span class="' + cls + '">' + esc(a.skill) + ' <b>' + (a.lethal ? '✕' : '−' + a.val) + '<\/b><\/span>';
     }).join('');
   }
-
   function treatHTML(e) {
     var d = degOf(e.degree);
     if (d.val === null) return '<span class="td-dim">Критическая — лечение невозможно<\/span>';
     var diff = treatDifficulty(e.degree, !!e.internal && findDef(e.name).cat === 'physical');
     return 'Лечение: <b>Сл ' + diff + '<\/b> · <span class="mtd">Операция (Анатомия + Метаболизм)<\/span> · <span class="mtd">Медикаментозное (Биохимия + Гомеостаз)<\/span>';
   }
-
   function cardHTML(e, i) {
     var def = findDef(e.name); if (!def) return '';
     var second = (def.cat === 'mental')
-      ? '<select class="td-sel scene" data-f="scene">' + sceneOptions(e.scene) + '<\/select>'
+      ? '<select class="td-sel scene" data-f="scene">' + skillOptions(e.scene) + '<\/select>'
       : '<select class="td-sel loc" data-f="loc">' + locOptions(e.loc) + '<\/select>';
-
     var flags = '';
     if (def.cat === 'physical') {
       flags += '<label class="td-chk' + (e.internal ? ' on' : '') + '"><input type="checkbox" data-f="internal"' + (e.internal ? ' checked' : '') + '> Внутренние органы<\/label>';
     }
     flags += '<label class="td-chk' + (e.urgent ? ' on' : '') + '"><input type="checkbox" data-f="urgent"' + (e.urgent ? ' checked' : '') + '> Срочная<\/label>';
-
     var perm = '';
     if (e.degree === 'heavy') {
       var ps = e.permSkill || defaultPermSkill(e);
       perm = '<div class="td-flags" style="margin-top:6px">' +
         '<label class="td-chk' + (e.permOn ? ' on' : '') + '"><input type="checkbox" data-f="permOn"' + (e.permOn ? ' checked' : '') + '> Постоянное последствие (−1 ИЗН)<\/label>' +
-        '<select class="td-sel pskill" data-f="permSkill">' + permSkillOptions(ps) + '<\/select>' +
-        '<\/div>';
+        '<select class="td-sel pskill" data-f="permSkill">' + skillOptions(ps) + '<\/select><\/div>';
     }
-
-    return '' +
-      '<div class="td-inj" data-i="' + i + '">' +
-        '<div class="top">' +
-          '<span class="td-idx">' + (i + 1) + '<\/span>' +
-          '<select class="td-sel name" data-f="name">' + nameOptions(e.name) + '<\/select>' +
-          second +
-          '<select class="td-sel deg" data-f="degree">' + degOptions(e.degree) + '<\/select>' +
-          '<span class="td-rm" data-rm="' + i + '" title="Удалить">×<\/span>' +
-        '<\/div>' +
-        '<div class="td-flags">' + flags + '<\/div>' +
-        perm +
-        '<div class="td-skills">' + chipsHTML(e) + '<\/div>' +
-        '<div class="td-treat">' + treatHTML(e) + '<\/div>' +
-      '<\/div>';
-  }
-
-  // --- карта навык -> индекс строки листа ---
-  var skillIndex = {};
-  function buildSkillIndex() {
-    skillIndex = {};
-    var rows = document.querySelectorAll('tr[data-a]');
-    for (var i = 0; i < rows.length; i++) {
-      var sk = rows[i].querySelector('td.sk');
-      var n = rows[i].dataset.n;
-      if (sk && n != null) skillIndex[sk.textContent.trim()] = n;
+    var note = '';
+    if (e.internal && def.cat === 'physical') {
+      note = '<div class="tx-note">−1 Здоровья = −1 к каждому из 3 навыков Здоровья: Метаболизм, Гомеостаз, Нейромоторика (в сумме −3).<\/div>';
     }
-  }
-  function cell(name, prefix) {
-    var n = skillIndex[name];
-    return (n != null) ? document.getElementById(prefix + n) : null;
+    return '<div class="td-inj" data-i="' + i + '">' +
+      '<div class="top"><span class="td-idx">' + (i + 1) + '<\/span>' +
+        '<select class="td-sel name" data-f="name">' + nameOptions(e.name) + '<\/select>' + second +
+        '<select class="td-sel deg" data-f="degree">' + degOptions(e.degree) + '<\/select>' +
+        '<span class="td-rm" data-rm="' + i + '" title="Удалить">×<\/span><\/div>' +
+      '<div class="td-flags">' + flags + '<\/div>' + perm +
+      '<div class="td-skills">' + chipsHTML(e) + '<\/div>' + note +
+      '<div class="td-treat">' + treatHTML(e) + '<\/div><\/div>';
   }
 
-  // --- применение к листу (идемпотентно) ---
-  function applyToSheet() {
-    buildSkillIndex();
-    var k, el;
-    for (k in state.applied.zs) { el = cell(k, 'md'); if (el) el.value = num(el.value) - state.applied.zs[k]; }
-    for (k in state.applied.izn) { el = cell(k, 'iz'); if (el) el.value = num(el.value) - state.applied.izn[k]; }
-    state.applied = { zs: {}, izn: {} };
-
-    var zs = {}, iz = {};
-    state.traumas.forEach(function (e) {
-      if (!e) return;
-      var d = degOf(e.degree);
-      if (d.val !== null) {
-        rawAffected(e).forEach(function (a) { if (typeof a.val === 'number') zs[a.skill] = (zs[a.skill] || 0) + a.val; });
-      }
-      if (e.permOn && e.degree === 'heavy' && e.permSkill) iz[e.permSkill] = (iz[e.permSkill] || 0) - 1;
+  /* --- патологии / просветления / гейсы --- */
+  function colOptions(sel) { return opts([['zs','ЗС'],['izn','ИЗН']], sel); }
+  function modRowHTML(m, j, scope) {
+    return '<div class="tx-mod" data-m="' + j + '">' +
+      '<select class="td-sel tx-target" data-f="target">' + targetOptions(scope, m.target) + '<\/select>' +
+      '<input class="tx-val" data-f="val" type="number" step="1" inputmode="numeric" title="+ / − к каждому выбранному навыку" value="' + num(m.val) + '">' +
+      '<span class="td-rm" data-rmmod="' + j + '" title="Убрать">×<\/span><\/div>';
+  }
+  function modChips(e) {
+    var out = [];
+    (e.mods || []).forEach(function (m) {
+      var list = resolve(m.target), v = num(m.val);
+      if (!list.length || !v) return;
+      out.push('<span class="tx-chip ' + (v < 0 ? 'neg' : 'pos') + '">' + esc(targetLabel(m.target)) +
+        ' <b>' + sign(v) + '<\/b>' + (list.length > 1 ? '<i>× ' + list.length + ' = ' + sign(v * list.length) + '<\/i>' : '') + '<\/span>');
     });
-
-    for (k in zs) { el = cell(k, 'md'); if (el) { el.value = num(el.value) + zs[k]; state.applied.zs[k] = zs[k]; fire(el); } }
-    for (k in iz) { el = cell(k, 'iz'); if (el) { el.value = num(el.value) + iz[k]; state.applied.izn[k] = iz[k]; fire(el); } }
+    return out.length ? out.join('') : '<span class="td-dim">— изменений нет —<\/span>';
   }
-  function fire(el) {
-    try { el.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+  function pathCard(e, i) {
+    var degs = [];
+    for (var n = 1; n <= 6; n++) degs.push([n, 'Степень ' + n]);
+    return '<div class="tx-card" data-i="' + i + '">' +
+      '<div class="top"><span class="td-idx">' + (i + 1) + '<\/span>' +
+        '<input class="td-sel name tx-name" data-f="name" type="text" placeholder="Название патологии" value="' + esc(e.name) + '">' +
+        '<select class="td-sel tx-kind" data-f="kind">' + opts([['physical','Физическая'],['mental','Психическая']], e.kind) + '<\/select>' +
+        '<select class="td-sel deg" data-f="degree" title="Степень патологии (1–6)">' + opts(degs, e.degree) + '<\/select>' +
+        '<span class="td-rm" data-rm="' + i + '" title="Удалить">×<\/span><\/div>' +
+      '<div class="tx-sub">Расчётная степень: <b>' + computedDegree(e) + '<\/b> · ' +
+        '<label class="td-chk' + (e.degreeAuto ? ' on' : '') + '"><input type="checkbox" data-f="degreeAuto"' + (e.degreeAuto ? ' checked' : '') + '> авто<\/label> · ' +
+        'писать в <select class="td-sel tx-col" data-f="col">' + colOptions(e.col) + '<\/select><\/div>' +
+      '<div class="tx-mods">' + (e.mods || []).map(function (m, j) { return modRowHTML(m, j, e.kind); }).join('') + '<\/div>' +
+      '<button type="button" class="tx-addmod" data-addmod="' + i + '">+ Навык / группа<\/button>' +
+      '<div class="tx-effect">' + modChips(e) + '<\/div>' +
+      '<div class="tx-stigma"><label>Стигмат<\/label><input class="tx-text" data-f="stigma" type="text" placeholder="Предмет тёмного стигмата" value="' + esc(e.stigma) + '"><\/div>' +
+    '<\/div>';
+  }
+  function lightCard(e, i) {
+    return '<div class="tx-card" data-i="' + i + '">' +
+      '<div class="top"><span class="td-idx">' + (i + 1) + '<\/span>' +
+        '<input class="td-sel name tx-name" data-f="name" type="text" placeholder="Название просветления" value="' + esc(e.name) + '">' +
+        '<select class="td-sel tx-kind" data-f="kind">' + opts([['minor','Малое'],['fundamental','Фундаментальное']], e.kind) + '<\/select>' +
+        '<span class="td-rm" data-rm="' + i + '" title="Удалить">×<\/span><\/div>' +
+      '<div class="tx-sub">Только Воля и Харизма · писать в <select class="td-sel tx-col" data-f="col">' + colOptions(e.col) + '<\/select><\/div>' +
+      '<div class="tx-mods">' + (e.mods || []).map(function (m, j) { return modRowHTML(m, j, 'light'); }).join('') + '<\/div>' +
+      '<button type="button" class="tx-addmod" data-addmod="' + i + '">+ Навык / аспект<\/button>' +
+      '<div class="tx-effect">' + modChips(e) + '<\/div>' +
+      '<div class="tx-stigma"><label>Стигмат<\/label><input class="tx-text" data-f="stigma" type="text" placeholder="Предмет светлого стигмата" value="' + esc(e.stigma) + '"><\/div>' +
+    '<\/div>';
+  }
+  function geasCard(e, i) {
+    var qName = { what:'Что', where:'Где', when:'Когда', why:'Зачем' }[e.q] || 'Что';
+    return '<div class="tx-card" data-i="' + i + '">' +
+      '<div class="top"><span class="td-idx">' + (i + 1) + '<\/span>' +
+        '<input class="td-sel name tx-name" data-f="spell" type="text" placeholder="Название заклинания" value="' + esc(e.spell) + '">' +
+        '<select class="td-sel tx-q" data-f="q">' + opts([['what','Что'],['where','Где'],['when','Когда'],['why','Зачем']], e.q) + '<\/select>' +
+        '<input class="tx-val" data-f="bonus" type="number" step="1" inputmode="numeric" title="Размер бонуса" value="' + num(e.bonus) + '">' +
+        '<span class="td-rm" data-rm="' + i + '" title="Удалить">×<\/span><\/div>' +
+      '<div class="tx-sub">Гейс «' + qName + '» · бонус <b>' + sign(num(e.bonus)) + '<\/b> к броску' +
+        (e.q === 'why' ? ' · «Зачем» — Гейс светлого стигмата (+2)' : '') + '<\/div><\/div>';
+  }
+  function stigmaLine(arr, light) {
+    var items = [];
+    arr.forEach(function (e) {
+      if (!e.stigma || !String(e.stigma).trim()) return;
+      items.push('<span class="td-chip stigma">' + (light ? 'Светлый' : 'Тёмный') + ': ' + esc(String(e.stigma).trim()) +
+        (e.name ? ' (' + esc(e.name) + ')' : '') + '<\/span>');
+    });
+    return items.length ? '<b>Стигматы:<\/b> ' + items.join(' ') : '';
   }
 
-  // --- рендер ---
-  function render() {
-    var list = $('td_list');
-    if (!state.traumas.length) list.innerHTML = '<div class="td-empty">Пока нет травм. Нажмите «+ Добавить травму».<\/div>';
-    else list.innerHTML = state.traumas.map(function (e, i) { return cardHTML(e, i); }).join('');
-    renderSummary();
+  /* --- новые записи --- */
+  function newPath() {
+    var e = { name:'', kind:'physical', degree:1, degreeAuto:true, stigma:'', col:'zs', mods:[{ target:'grp:te_hp', val:-1 }] };
+    e.degree = computedDegree(e);
+    return e;
+  }
+  function newLight() {
+    return { name:'', kind:'minor', stigma:'', col:'zs', mods:[{ target:'sk:Самообладание', val:1 }] };
+  }
+  function newGeas() { return { spell:'', q:'what', bonus:1 }; }
+  function addInjury() {
+    var first = INJURIES.physical[0];
+    state.traumas.push({ name:first.name, cat:'physical', degree:'light', loc:first.loc || 'torso',
+      scene:'Концентрация', internal:false, urgent:false, permOn:false, permSkill:'' });
+    render();
+  }
+
+  /* --- сбор всех +/- и запись в лист --- */
+  function collectDeltas() {
+    var zs = {}, iz = {}, sec = {
+      traumas:{ zs:0, izn:0 }, pathologies:{ zs:0, izn:0 },
+      enlightenments:{ zs:0, izn:0 }, geases:{ zs:0, izn:0, bonus:0 }
+    };
+    function put(k, col, skill, v) {
+      var m = (col === 'izn') ? iz : zs;
+      m[skill] = (m[skill] || 0) + v;
+      sec[k][col === 'izn' ? 'izn' : 'zs'] += v;
+    }
+    state.traumas.forEach(function (e) {
+      var d = degOf(e.degree);
+      if (d.val !== null) rawAffected(e).forEach(function (a) {
+        if (typeof a.val === 'number' && a.val) put('traumas', 'zs', a.skill, -a.val);
+      });
+      if (e.permOn && e.degree === 'heavy' && e.permSkill) put('traumas', 'izn', e.permSkill, -1);
+    });
+    state.pathologies.forEach(function (e) {
+      (e.mods || []).forEach(function (m) {
+        var v = num(m.val); if (!v) return;
+        resolve(m.target).forEach(function (s) { put('pathologies', e.col || 'zs', s, v); });
+      });
+    });
+    state.enlightenments.forEach(function (e) {
+      (e.mods || []).forEach(function (m) {
+        var v = num(m.val); if (!v) return;
+        resolve(m.target).forEach(function (s) { put('enlightenments', e.col || 'zs', s, v); });
+      });
+    });
+    state.geases.forEach(function (e) { sec.geases.bonus += num(e.bonus); });
+    return { zs:zs, izn:iz, sec:sec };
+  }
+  function writeCell(r, prefix, base, delta) {
+    var el = cellOf(r, prefix); if (!el) return false;
+    var v = base + delta;
+    var text = (v === 0 && base === 0 && delta === 0) ? '' : String(v);
+    if (el.value === '' && v === 0) text = '';
+    if (String(el.value) === text) return false;
+    el.value = text;
+    return true;
+  }
+  function fireSheet() {
+    /* событие от body: лист пересчитает РЗН и сохранится, но не обрежет отрицательные ИЗН */
+    firing = true;
+    try { document.body.dispatchEvent(new Event('input', { bubbles:true })); } catch (e) {}
+    firing = false;
+  }
+  function chipList(map) {
+    var keys = Object.keys(map).filter(function (k) { return map[k]; })
+      .sort(function (a, b) { return map[b] - map[a]; });
+    if (!keys.length) return '<span class="td-dim">— нет изменений —<\/span>';
+    return keys.map(function (k) {
+      return '<span class="td-chip ' + (map[k] < 0 ? 'neg' : 'pos') + '"><b>' + sign(map[k]) + '<\/b> ' + esc(k) + '<\/span>';
+    }).join('');
+  }
+  function secBadge(s) {
+    var bits = [];
+    if (s.zs) bits.push('ЗС ' + sign(s.zs));
+    if (s.izn) bits.push('ИЗН ' + sign(s.izn));
+    if (s.bonus) bits.push('+' + s.bonus + ' к броску');
+    return bits.join(' · ');
+  }
+  function renderSummaries(d) {
+    $('tx_sum_zs').innerHTML = chipList(d.zs);
+    $('tx_sum_izn').innerHTML = chipList(d.izn);
+    $('tx_totals').innerHTML = 'Сумма по ЗС: <b>' + sign(sumMap(d.zs)) + '<\/b> · по ИЗН: <b>' + sign(sumMap(d.izn)) +
+      '<\/b> · баллы Гейсов: <b>+' + d.sec.geases.bonus + '<\/b>';
+    $('cnt_traumas').textContent = state.traumas.length;
+    $('cnt_path').textContent = state.pathologies.length;
+    $('cnt_light').textContent = state.enlightenments.length;
+    $('cnt_geas').textContent = state.geases.length;
+    $('sum_traumas').textContent = secBadge(d.sec.traumas);
+    $('sum_path').textContent = secBadge(d.sec.pathologies);
+    $('sum_light').textContent = secBadge(d.sec.enlightenments);
+    $('sum_geas').textContent = secBadge(d.sec.geases);
+    $('tp_stigmas').innerHTML = stigmaLine(state.pathologies, false);
+    $('tl_stigmas').innerHTML = stigmaLine(state.enlightenments, true);
+  }
+  function applyAll() {
+    var d = collectDeltas(), changed = false;
+    ROWS.forEach(function (r) {
+      if (writeCell(r, 'md', baseZS[r.name] || 0, d.zs[r.name] || 0)) changed = true;
+      if (writeCell(r, 'iz', baseIZN[r.name] || 0, d.izn[r.name] || 0)) changed = true;
+    });
+    state.applied = { zs:d.zs, izn:d.izn };
+    if (changed) fireSheet();
+    renderSummaries(d);
     saveState();
-    applyToSheet();
   }
-
-  function renderSummary() {
-    var zs = {}, iz = {};
-    state.traumas.forEach(function (e) {
-      if (!e) return;
-      var d = degOf(e.degree);
-      if (d.val !== null) rawAffected(e).forEach(function (a) { if (typeof a.val === 'number') zs[a.skill] = (zs[a.skill] || 0) + a.val; });
-      if (e.permOn && e.degree === 'heavy' && e.permSkill) iz[e.permSkill] = (iz[e.permSkill] || 0) - 1;
+  function resync() {
+    /* базовые значения листа = текущие ячейки минус уже внесённые нами дельты */
+    var empty = ROWS.every(function (r) {
+      var a = cellOf(r, 'md'), b = cellOf(r, 'iz');
+      return (!a || a.value === '') && (!b || b.value === '');
     });
-    var zk = Object.keys(zs).sort(function (a, b) { return zs[b] - zs[a]; });
-    var ik = Object.keys(iz);
-    $('td_summary').innerHTML = zk.length
-      ? zk.map(function (k) { return '<span class="td-chip"><b>−' + zs[k] + '<\/b> ' + esc(k) + '<\/span>'; }).join('')
-      : '<span class="td-dim">— нет активных штрафов —<\/span>';
-    $('td_perm').innerHTML = ik.length
-      ? ik.map(function (k) { return '<span class="td-chip fix"><b>−1<\/b> ' + esc(k) + '<\/span>'; }).join('')
-      : '<span class="td-dim">— нет —<\/span>';
+    var az = state.applied.zs || {}, ai = state.applied.izn || {};
+    ROWS.forEach(function (r) {
+      var md = cellOf(r, 'md'), iz = cellOf(r, 'iz');
+      baseZS[r.name] = empty ? 0 : num(md ? md.value : 0) - (az[r.name] || 0);
+      baseIZN[r.name] = empty ? 0 : num(iz ? iz.value : 0) - (ai[r.name] || 0);
+    });
+    state.applied = { zs:{}, izn:{} };
+  }
+  function render() {
+    $('td_list').innerHTML = state.traumas.length
+      ? state.traumas.map(cardHTML).join('')
+      : '<div class="td-empty">Пока нет травм. Нажмите «+ Добавить травму».<\/div>';
+    $('tp_list').innerHTML = state.pathologies.length
+      ? state.pathologies.map(pathCard).join('')
+      : '<div class="td-empty">Пока нет патологий. Нажмите «+ Добавить патологию».<\/div>';
+    $('tl_list').innerHTML = state.enlightenments.length
+      ? state.enlightenments.map(lightCard).join('')
+      : '<div class="td-empty">Пока нет просветлений. Нажмите «+ Добавить просветление».<\/div>';
+    $('tg_list').innerHTML = state.geases.length
+      ? state.geases.map(geasCard).join('')
+      : '<div class="td-empty">Пока нет гейсов. Нажмите «+ Добавить гейс».<\/div>';
+    renderAccordion();
+    applyAll();
+  }
+  function renderAccordion() {
+    Object.keys(state.open).forEach(function (k) {
+      var sec = document.querySelector('.tx-sec[data-sec="' + k + '"]');
+      if (!sec) return;
+      sec.classList.toggle('open', !!state.open[k]);
+      var h = sec.querySelector('.tx-sec-h');
+      if (h) h.setAttribute('aria-expanded', state.open[k] ? 'true' : 'false');
+    });
   }
 
-  // --- состояние ---
+  /* --- состояние --- */
   function saveState() {
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
   }
   function loadState() {
-    try {
-      var raw = localStorage.getItem(KEY);
-      if (!raw) return;
-      var d = JSON.parse(raw);
-      if (d && Array.isArray(d.traumas)) {
-        state.traumas = d.traumas.filter(function (e) { return e && findDef(e.name); });
-        state.applied = (d.applied && typeof d.applied === 'object') ? d.applied : { zs: {}, izn: {} };
-      }
-    } catch (e) {}
-  }
-
-  function addInjury() {
-    var first = INJURIES.physical[0];
-    state.traumas.push({
-      name: first.name, cat: 'physical', degree: 'light',
-      loc: first.loc || 'torso', scene: 'Концентрация',
-      internal: !!first.internal, urgent: !!first.urgent, permOn: false, permSkill: ''
-    });
-    render();
-  }
-
-  // --- события ---
-  $('td_list').addEventListener('change', function (ev) {
-    var t = ev.target;
-    if (!t.dataset || !t.dataset.f) return;
-    var card = t.closest('.td-inj'); if (!card) return;
-    var i = +card.dataset.i, f = t.dataset.f;
-    var val = (t.type === 'checkbox') ? t.checked : t.value;
-    if (f === 'name') {
-      var def = findDef(t.value);
-      state.traumas[i] = {
-        name: t.value, cat: def.cat, degree: state.traumas[i].degree || 'light',
-        loc: def.loc || 'torso', scene: def.scene || 'Концентрация',
-        internal: !!def.internal, urgent: !!def.urgent, permOn: false, permSkill: ''
-      };
-    } else if (f === 'degree') {
-      state.traumas[i].degree = val;
-      if (val === 'heavy' && !state.traumas[i].permSkill) state.traumas[i].permSkill = defaultPermSkill(state.traumas[i]);
-      if (val !== 'heavy') state.traumas[i].permOn = false;
-    } else if (f === 'permOn') {
-      state.traumas[i].permOn = val;
-      if (val && !state.traumas[i].permSkill) state.traumas[i].permSkill = defaultPermSkill(state.traumas[i]);
-    } else {
-      state.traumas[i][f] = val;
+    var d = null, raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) {}
+    if (raw) { try { d = JSON.parse(raw); } catch (e) {} }
+    else {
+      try { d = JSON.parse(localStorage.getItem(OLDKEY) || 'null'); } catch (e) {}
+      if (d) d = { traumas:d.traumas || [], applied:d.applied || { zs:{}, izn:{} } };
     }
+    if (!d || typeof d !== 'object') return;
+    ['traumas','pathologies','enlightenments','geases'].forEach(function (k) {
+      if (Array.isArray(d[k])) state[k] = d[k].filter(function (e) { return e && typeof e === 'object'; });
+    });
+    state.traumas = state.traumas.filter(function (e) { return !!findDef(e.name); });
+    state.pathologies.forEach(function (e) {
+      if (!Array.isArray(e.mods)) e.mods = [];
+      if (!e.kind) e.kind = 'physical';
+      if (!e.col) e.col = 'zs';
+      if (e.degreeAuto === undefined) e.degreeAuto = true;
+      if (!e.degree) e.degree = 1;
+    });
+    state.enlightenments.forEach(function (e) {
+      if (!Array.isArray(e.mods)) e.mods = [];
+      if (!e.kind) e.kind = 'minor';
+      if (!e.col) e.col = 'zs';
+    });
+    state.geases.forEach(function (e) {
+      if (!e.q) e.q = 'what';
+      if (e.bonus === undefined) e.bonus = 1;
+    });
+    if (d.applied && typeof d.applied === 'object') {
+      state.applied = { zs:d.applied.zs || {}, izn:d.applied.izn || {} };
+    }
+    if (d.open && typeof d.open === 'object') {
+      Object.keys(state.open).forEach(function (k) {
+        if (typeof d.open[k] === 'boolean') state.open[k] = d.open[k];
+      });
+    }
+  }
+
+  /* --- события --- */
+  function fieldCtx(ev) {
+    var t = ev.target;
+    if (!t || !t.dataset || !t.dataset.f) return null;
+    var card = t.closest('.td-inj, .tx-card');
+    if (!card) return null;
+    var secEl = card.closest('.tx-sec');
+    if (!secEl || !state[secEl.dataset.sec]) return null;
+    var modEl = t.closest('.tx-mod');
+    return { t:t, f:t.dataset.f, card:card, sec:secEl.dataset.sec,
+      i:+card.dataset.i, m:modEl ? +modEl.dataset.m : -1 };
+  }
+  function onField(ev, isChange) {
+    var c = fieldCtx(ev); if (!c) return;
+    var t = c.t, f = c.f, arr = state[c.sec], e = arr[c.i];
+    if (!e) return;
+    var val = (t.type === 'checkbox') ? t.checked : t.value;
+
+    if (c.sec === 'traumas') {
+      if (f === 'name') {
+        var def = findDef(val); if (!def) return;
+        arr[c.i] = { name:val, cat:def.cat, degree:e.degree || 'light', loc:def.loc || 'torso',
+          scene:def.scene || 'Концентрация', internal:!!def.internal, urgent:!!def.urgent,
+          permOn:false, permSkill:'' };
+      } else if (f === 'degree') {
+        e.degree = val;
+        if (val === 'heavy' && !e.permSkill) e.permSkill = defaultPermSkill(e);
+        if (val !== 'heavy') e.permOn = false;
+      } else if (f === 'permOn') {
+        e.permOn = val;
+        if (val && !e.permSkill) e.permSkill = defaultPermSkill(e);
+      } else e[f] = val;
+    } else if (c.sec === 'geases') {
+      if (f === 'bonus') e.bonus = num(val);
+      else if (f === 'q') { e.q = val; if (val === 'why' && num(e.bonus) === 1) e.bonus = 2; }
+      else e[f] = val;
+    } else {
+      if (f === 'target' || f === 'val') {
+        var m = e.mods[c.m]; if (!m) return;
+        if (f === 'val') m.val = num(val); else m.target = val;
+        if (c.sec === 'pathologies' && e.degreeAuto) e.degree = computedDegree(e);
+      } else if (f === 'kind') {
+        e.kind = val;
+        var scope = scopeOf(e, c.sec);
+        (e.mods || []).forEach(function (mod) {
+          if (!targetInScope(mod.target, scope)) mod.target = defaultTarget(val);
+        });
+        if (c.sec === 'enlightenments') {
+          (e.mods || []).forEach(function (mod) {
+            if (val === 'fundamental' && mod.target.indexOf('sk:') === 0) {
+              var r = byName[mod.target.slice(3)];
+              mod.target = 'grp:' + (r ? r.a : 'vo_sk');
+            } else if (val === 'minor' && mod.target.indexOf('grp:') === 0) {
+              var list = resolve(mod.target);
+              mod.target = 'sk:' + (list[0] || 'Самообладание');
+            }
+          });
+        }
+        if (c.sec === 'pathologies' && e.degreeAuto) e.degree = computedDegree(e);
+      } else if (f === 'degree') {
+        e.degree = +val; e.degreeAuto = false;
+      } else if (f === 'degreeAuto') {
+        e.degreeAuto = val;
+        if (val) e.degree = computedDegree(e);
+      } else e[f] = val;
+    }
+
+    var structural = (t.tagName === 'SELECT' || t.type === 'checkbox' || f === 'kind' || f === 'degree');
+    if (isChange && structural) { render(); return; }
+    /* мягкое обновление: без перерисовки карточки, чтобы не терять фокус ввода */
+    if (c.sec !== 'traumas' && c.sec !== 'geases') {
+      var eff = c.card.querySelector('.tx-effect');
+      if (eff) eff.innerHTML = modChips(e);
+    }
+    applyAll();
+  }
+  function cardCtx(el) {
+    var card = el.closest('.td-inj, .tx-card'); if (!card) return null;
+    var secEl = card.closest('.tx-sec'); if (!secEl || !state[secEl.dataset.sec]) return null;
+    return { sec:secEl.dataset.sec, arr:state[secEl.dataset.sec], i:+card.dataset.i };
+  }
+  var drawer = $('traces_drawer'), toggle = $('b_traces');
+
+  drawer.addEventListener('input', function (ev) { onField(ev, false); });
+  drawer.addEventListener('change', function (ev) { onField(ev, true); });
+  drawer.addEventListener('click', function (ev) {
+    var t = ev.target;
+    var h = t.closest('.tx-sec-h');
+    if (h && h.dataset.toggle) {
+      var k = h.dataset.toggle;
+      state.open[k] = !state.open[k];
+      renderAccordion(); saveState();
+      return;
+    }
+    var am = t.closest('[data-addmod]');
+    if (am) {
+      var c1 = cardCtx(am); if (!c1 || !c1.arr[c1.i]) return;
+      var e1 = c1.arr[c1.i];
+      e1.mods.push({ target:defaultTarget(e1.kind || 'minor'), val:c1.sec === 'enlightenments' ? 1 : -1 });
+      if (c1.sec === 'pathologies' && e1.degreeAuto) e1.degree = computedDegree(e1);
+      render(); return;
+    }
+    var rmm = t.closest('[data-rmmod]');
+    if (rmm) {
+      var c2 = cardCtx(rmm); if (!c2 || !c2.arr[c2.i]) return;
+      var e2 = c2.arr[c2.i];
+      e2.mods.splice(+rmm.dataset.rmmod, 1);
+      if (c2.sec === 'pathologies' && e2.degreeAuto) e2.degree = computedDegree(e2);
+      render(); return;
+    }
+    var rm = t.closest('[data-rm]');
+    if (rm && rm.dataset.rm !== undefined) {
+      var c3 = cardCtx(rm); if (!c3) return;
+      c3.arr.splice(+rm.dataset.rm, 1);
+      render(); return;
+    }
+  });
+  $('td_add').addEventListener('click', addInjury);
+  $('tp_add').addEventListener('click', function () { state.pathologies.push(newPath()); render(); });
+  $('tl_add').addEventListener('click', function () { state.enlightenments.push(newLight()); render(); });
+  $('tg_add').addEventListener('click', function () { state.geases.push(newGeas()); render(); });
+  $('tx_apply').addEventListener('click', function () { resync(); applyAll(); });
+  $('tx_clear').addEventListener('click', function () {
+    if (!confirm('Удалить все следы (травмы, патологии, просветления и гейсы)?')) return;
+    state.traumas = []; state.pathologies = []; state.enlightenments = []; state.geases = [];
     render();
   });
-
-  $('td_list').addEventListener('click', function (ev) {
-    var rm = ev.target.closest('[data-rm]');
-    if (rm) { state.traumas.splice(+rm.dataset.rm, 1); render(); }
+  function setOpen(on) {
+    drawer.classList.toggle('open', on);
+    toggle.classList.toggle('open', on);
+    toggle.setAttribute('aria-expanded', on ? 'true' : 'false');
+    drawer.setAttribute('aria-hidden', on ? 'false' : 'true');
+    try { parent.postMessage({__aeTracesState: on}, '*'); } catch (e) {}
+    if (on) { resync(); applyAll(); }
+  }
+  window.addEventListener('message', function (ev) {
+    var d = ev.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.__aeTraces === 'open') setOpen(true);
+    else if (d.__aeTraces === 'toggle') setOpen(!drawer.classList.contains('open'));
   });
+  toggle.addEventListener('click', function () { setOpen(!drawer.classList.contains('open')); });
+  $('td_close').addEventListener('click', function () { setOpen(false); });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && drawer.classList.contains('open')) setOpen(false);
+  });
+  /* «Очистить» и «Загрузить из файла» меняют ячейки без событий ввода — пересобираем базу */
+  document.addEventListener('click', function (ev) {
+    if (ev.target && ev.target.id === 'b_reset') {
+      setTimeout(function () { resync(); applyAll(); }, 0);
+    }
+  }, false);
+  document.addEventListener('change', function (ev) {
+    if (ev.target && ev.target.id === 'f_import') {
+      setTimeout(function () { resync(); applyAll(); }, 250);
+    }
+  }, false);
+  /* ручная правка ячеек листа обновляет базу, чтобы дельты следов не затирали её */
+  document.addEventListener('input', function (ev) {
+    if (firing) return;
+    var t = ev.target;
+    if (!t || !t.id || !(t.classList.contains('md') || t.classList.contains('iz'))) return;
+    var r = byN[t.id.replace(/^(md|iz)/, '')]; if (!r) return;
+    var isZs = t.classList.contains('md');
+    var delta = (state.applied[isZs ? 'zs' : 'izn'] || {})[r.name] || 0;
+    if (isZs) baseZS[r.name] = num(t.value) - delta;
+    else baseIZN[r.name] = num(t.value) - delta;
+    saveState();
+  }, false);
 
-  $('td_add').addEventListener('click', addInjury);
-  $('td_apply').addEventListener('click', applyToSheet);
-
-  var drawer = $('trauma_drawer');
-  $('b_traumas').addEventListener('click', function () { drawer.classList.toggle('open'); });
-  $('td_close').addEventListener('click', function () { drawer.classList.remove('open'); });
-
-  // --- старт ---
+  /* --- старт --- */
+  buildIndex();
   loadState();
+  resync();
   render();
 })();
 <\/script>
+
 
       <\/body>
     <\/html>
@@ -6639,6 +7100,24 @@
           nav.appendChild(b);
           buttons.push(b);
         });
+        /* глобальная кнопка «Следы →»: переходит на лист персонажа и открывает панель */
+        var sledyBtn = document.getElementById('b_sledy');
+        function postTraces(f, cmd) {
+          try { f.contentWindow.postMessage({__aeTraces: cmd}, '*'); } catch (e) {}
+        }
+        sledyBtn.addEventListener('click', function () {
+          var f = frame('sheet');
+          if (!f) return;
+          var fresh = !f.dataset.mounted;
+          var cmd = (current === 'sheet') ? 'toggle' : 'open';
+          show('sheet');
+          if (fresh) {
+            f.addEventListener('load', function once() {
+              f.removeEventListener('load', once);
+              postTraces(f, cmd);
+            });
+          } else postTraces(f, cmd);
+        });
         window.addEventListener('message', function (e) {
           var d = e.data;
           if (!d || typeof d !== 'object') return ;
@@ -6659,6 +7138,9 @@
           if (d.__aeHits !== undefined && src.dataset.key === current) {
             var n = d.__aeHits | 0;
             setCount(n ? ((d.__aeIdx | 0) + 1) + '/' + n : '');
+          }
+          if (d.__aeTracesState !== undefined && src.dataset.key === 'sheet') {
+            document.getElementById('b_sledy').classList.toggle('active', !!d.__aeTracesState);
           }
         });
         var lastQ = '',timer = null;
