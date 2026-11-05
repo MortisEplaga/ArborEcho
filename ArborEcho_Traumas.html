@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbor Echo — Травмы</title>
+    <style>
+      :root {
+        --bg:#0d100b;
+        --bg2:#181d16;
+        --bg3:#1e2519;
+        --border:#354533;
+        --brite:#506a4c;
+        --gold:#c8a84b;
+        --green:#7ab870;
+        --teal:#4a9080;
+        --text:#d5ccbc;
+        --dim:#7a7268;
+        --red:#b05040;
+        --orange:#c07840;
+        --head:'Cinzel',Georgia,serif;
+        --body:'IM Fell English',Georgia,serif;
+        --mono:'Share Tech Mono','Courier New',monospace;
+      }
+      * { box-sizing:border-box; margin:0; padding:0; }
+      html,body { min-height:100%; }
+      body { background:var(--bg); color:var(--text); font-family:var(--body); font-size:13px; padding:10px; }
+      .wrap { max-width:1080px; margin:0 auto; }
+      .toolbar { display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap; margin-bottom:8px; font-family:var(--mono); }
+      .toolbar button { background:var(--bg3); color:var(--gold); border:1px solid var(--border); border-radius:2px; font-family:var(--head); font-size:9px; letter-spacing:.12em; text-transform:uppercase; padding:5px 10px; cursor:pointer; }
+      .toolbar button:hover { border-color:var(--green); color:var(--green); }
+      .pg-head { display:flex; align-items:baseline; justify-content:space-between; border-bottom:2px solid var(--gold); padding-bottom:5px; margin-bottom:6px; }
+      .pg-head .title { font-family:var(--head); font-size:18px; letter-spacing:.1em; color:var(--gold); }
+      .pg-head .sub { font-family:var(--mono); font-size:9px; color:var(--dim); letter-spacing:.14em; text-transform:uppercase; }
+      .hint { font-style:italic; color:var(--dim); font-size:11px; margin:0 0 8px; padding-left:6px; border-left:2px solid var(--border); line-height:1.4; }
+      #list { display:block; }
+      .empty { color:var(--dim); font-style:italic; padding:14px; text-align:center; border:1px dashed var(--border); border-radius:3px; }
+      .inj { background:var(--bg2); border:1px solid var(--border); border-radius:3px; padding:8px 10px; margin-bottom:8px; }
+      .inj .top { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+      .idx { font-family:var(--mono); font-size:11px; color:var(--gold); min-width:20px; }
+      .sel { background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:2px; padding:4px 6px; font-family:var(--mono); font-size:12px; max-width:340px; }
+      .sel:focus { border-color:var(--green); outline:none; }
+      .sel.name { flex:1 1 240px; color:var(--gold); }
+      .sel.deg { color:var(--red); }
+      .urg { font-family:var(--mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--orange); border:1px solid var(--orange); border-radius:2px; padding:2px 5px; white-space:nowrap; }
+      .rm { font-family:var(--mono); font-size:18px; line-height:1; color:var(--dim); cursor:pointer; padding:0 4px; margin-left:auto; user-select:none; }
+      .rm:hover { color:var(--red); }
+      .skills { margin-top:7px; display:flex; flex-wrap:wrap; gap:6px; }
+      .chip { display:inline-flex; gap:6px; align-items:baseline; background:var(--bg3); border:1px solid var(--border); border-radius:2px; padding:3px 8px; font-family:var(--mono); font-size:12px; }
+      .chip b { color:var(--red); font-size:13px; }
+      .chip.lethal { border-color:var(--red); }
+      .chip.lethal b { color:var(--red); }
+      .chip.tot b { color:var(--gold); }
+      .add { width:100%; background:transparent; border:1px dashed var(--gold); border-radius:3px; color:var(--gold); font-family:var(--head); font-size:13px; letter-spacing:.08em; padding:9px; cursor:pointer; margin:4px 0 12px; }
+      .add:hover { background:rgba(200,168,75,.08); color:var(--green); border-color:var(--green); }
+      .p { background:var(--bg2); border:1px solid var(--border); border-radius:2px; padding:8px 10px; }
+      .st { font-family:var(--head); font-size:9px; letter-spacing:.17em; text-transform:uppercase; color:var(--gold); border-bottom:1px solid var(--border); padding-bottom:3px; margin-bottom:7px; }
+      .st::before { content:'▸ '; color:var(--green); }
+      .sumgrid { display:flex; flex-wrap:wrap; gap:6px; }
+      .dim { color:var(--dim); font-style:italic; }
+      .pg-foot { margin-top:10px; padding-top:4px; border-top:1px solid var(--border); font-family:var(--mono); font-size:8px; color:var(--dim); letter-spacing:.1em; text-align:center; }
+      @media print {
+        body { background:#fff; color:#000; padding:0; }
+        .toolbar, .add, .rm { display:none !important; }
+        .pg-head .title { color:#000; }
+        .inj, .p { border-color:#bbb; background:#f9f9f9; }
+        .chip { background:#eee; border-color:#bbb; color:#000; }
+        .chip b { color:#900; }
+        .chip.tot b { color:#000; }
+        .pg-foot { border-top-color:#ccc; }
+        .hint { color:#333; }
+      }
+      html::-webkit-scrollbar,*::-webkit-scrollbar { width:10px; height:10px; }
+      html::-webkit-scrollbar-track,*::-webkit-scrollbar-track { background:#0d100b; }
+      html::-webkit-scrollbar-thumb,*::-webkit-scrollbar-thumb { background:#354533; border:2px solid #0d100b; border-radius:0; }
+      html::-webkit-scrollbar-thumb:hover,*::-webkit-scrollbar-thumb:hover { background:#c8a84b; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="toolbar">
+        <button id="b_print" type="button">Печать</button>
+        <button id="b_export" type="button">Сохранить в файл</button>
+        <button id="b_import" type="button">Загрузить из файла</button>
+        <button id="b_clear" type="button">Очистить</button>
+        <input id="f_import" type="file" accept="application/json,.json" hidden>
+      </div>
+      <div class="pg-head">
+        <div class="title">Arbor Echo · Травмы</div>
+        <div class="sub">Лист персонажа</div>
+      </div>
+      <p class="hint">Нажмите «+ Добавить травму». Выберите название — под него автоматически подтянутся навыки, по которым идёт штраф. Степень меняет размер штрафа. Критическая травма — летальна.</p>
+
+      <div id="list"></div>
+
+      <button id="b_add" class="add" type="button">+ Добавить травму</button>
+
+      <div class="p">
+        <div class="st">Суммарные штрафы по навыкам</div>
+        <div id="summary" class="sumgrid"></div>
+      </div>
+
+      <div class="pg-foot">Arbor Echo · Травмы · CC BY-NC 4.0</div>
+    </div>
+
+    <script>
+      (function () {
+        'use strict';
+
+        // --- Данные: локализация -> специализированный навык ---
+        var LOC = {
+          head:    { label: 'Голова',              skill: 'Концентрация' },
+          torso:   { label: 'Торс',                skill: 'Выносливость' },
+          arms:    { label: 'Руки',                skill: 'Точная моторика' },
+          legs:    { label: 'Ноги',                skill: 'Общая моторика' },
+          eyes:    { label: 'Глаза',               skill: 'Зрение' },
+          ears:    { label: 'Уши',                 skill: 'Слух' },
+          nose:    { label: 'Нос',                 skill: 'Обоняние' },
+          tongue:  { label: 'Язык',                skill: 'Вкус' },
+          skin:    { label: 'Кожа',                skill: 'Осязание' },
+          organs:  { label: 'Внутренние органы',   skill: 'Здоровье', internal: true }
+        };
+
+        // --- Степени и размер штрафа ---
+        var DEG = [
+          { key: 'light',   label: 'Лёгкая',       val: 1,     tag: '−1' },
+          { key: 'medium',  label: 'Средняя',      val: 2,     tag: '−2' },
+          { key: 'heavy',   label: 'Тяжёлая',      val: 3,     tag: '−3' },
+          { key: 'critical',label: 'Критическая',  val: null,  tag: 'летально' }
+        ];
+
+        // --- Список травм по категориям ---
+        // physical: health — навык Здоровья (по таблице правил), loc — локализация по умолчанию
+        // somatic:  aspect — навык Самоконтроля, loc — локализация
+        // mental:   aspect — навык Самоконтроля, scene — связанный навык (по сцене)
+        var INJURIES = {
+          physical: [
+            { name: 'Перелом',                    health: 'Нейромоторика', loc: 'legs' },
+            { name: 'Разрыв связок',              health: 'Нейромоторика', loc: 'arms' },
+            { name: 'Контузия',                   health: 'Нейромоторика', loc: 'head' },
+            { name: 'Удар током',                 health: 'Нейромоторика', loc: 'torso', urgent: true },
+            { name: 'Ожог',                       health: 'Метаболизм',    loc: 'arms' },
+            { name: 'Обморожение',                health: 'Метаболизм',    loc: 'legs' },
+            { name: 'Кровотечение',               health: 'Метаболизм',    loc: 'torso', urgent: true },
+            { name: 'Анафилактический шок',       health: 'Гомеостаз',     loc: 'organs', urgent: true },
+            { name: 'Солнечный удар',             health: 'Гомеостаз',     loc: 'head' },
+            { name: 'Разрыв печёночной артерии',  health: 'Метаболизм',    loc: 'organs', urgent: true, extra: ['Нейромоторика', 'Выносливость'] }
+          ],
+          mental: [
+            { name: 'Информационный перегруз',    aspect: 'Самообладание', scene: 'Концентрация' },
+            { name: 'Паническая атака',           aspect: 'Самообладание', scene: 'Выносливость' },
+            { name: 'Диссоциация',                aspect: 'Концентрация',  scene: 'Интероцепция' },
+            { name: 'Навязчивый образ',           aspect: 'Независимость', scene: 'Чтение замысла' }
+          ],
+          somatic: [
+            { name: 'Психогенный тремор',         aspect: 'Самообладание', loc: 'arms' },
+            { name: 'Комок в горле',              aspect: 'Самообладание', loc: 'torso' },
+            { name: 'Гипервентиляция',            aspect: 'Концентрация',  loc: 'torso' },
+            { name: 'Мышечный спазм',             aspect: 'Самообладание', loc: 'legs' }
+          ]
+        };
+
+        // --- Все навыки (для выбора «связанного навыка» у психических травм) ---
+        var SKILLS = [
+          'Культурология','История','Визуальная культура','Лингвистика','Медицина','Нейрофизиология','Биохимия','Анатомия',
+          'Физика','Классическая физика','Электроморфизм','Квантовая теория','Биология','Генетика','Микроструктуры','Макроорганизмы',
+          'Химия','Реактивная химия','Синтетическая химия','Материаловедение','Математика','Формальный анализ','Теория вероятностей','Пространственная логика',
+          'Атлетика','Контроль','Выносливость','Метаболизм','Гомеостаз','Нейромоторика','Точная моторика','Общая моторика','Проприоцепция',
+          'Изнанка','Материя','Менталистика','Архитектоника','Концентрация','Самообладание','Независимость',
+          'Эмпатия','Манипулирование','Актёрство','Чтение замысла','Влияние','Администрирование','Чувство конфликта','Убеждение','Запугивание','Обман',
+          'Зрение','Слух','Обоняние','Интероцепция','Вкус','Осязание'
+        ];
+
+        var KEY = 'ae_traumas_v1';
+        var entries = [];
+
+        // --- Утилиты ---
+        function findDef(name) {
+          var cats = ['physical', 'mental', 'somatic'];
+          for (var c = 0; c < cats.length; c++) {
+            var arr = INJURIES[cats[c]];
+            for (var i = 0; i < arr.length; i++) {
+              if (arr[i].name === name) {
+                var d = {};
+                for (var k in arr[i]) if (arr[i].hasOwnProperty(k)) d[k] = arr[i][k];
+                d.cat = cats[c];
+                return d;
+              }
+            }
+          }
+          return null;
+        }
+
+        function degOf(key) {
+          for (var i = 0; i < DEG.length; i++) if (DEG[i].key === key) return DEG[i];
+          return DEG[0];
+        }
+
+        // Навыки, по которым идёт штраф, с учётом степени
+        function affected(def, locKey, degVal, critical) {
+          var out = [];
+          if (def.cat === 'mental') {
+            out.push({ skill: def.aspect, mode: 'deg' });
+            out.push({ skill: def.scene,  mode: 'deg' });
+          } else {
+            var base = def.health || def.aspect;
+            if (base) out.push({ skill: base, mode: 'deg' });
+            var L = LOC[locKey];
+            if (L) {
+              if (L.internal) out.push({ skill: 'Здоровье', mode: 'fix1' });
+              else out.push({ skill: L.skill, mode: 'deg' });
+            }
+          }
+          if (def.extra) for (var i = 0; i < def.extra.length; i++) out.push({ skill: def.extra[i], mode: 'deg' });
+
+          for (var j = 0; j < out.length; j++) {
+            if (critical) out[j].val = '✕';
+            else if (out[j].mode === 'fix1') out[j].val = 1;     // внутренние органы: всегда −1
+            else out[j].val = degVal;
+          }
+          return out;
+        }
+
+        // --- Построение option-списков ---
+        function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+        function nameOptions(sel) {
+          var groups = [
+            ['physical', 'Физические травмы'],
+            ['mental',   'Психические травмы'],
+            ['somatic',  'Соматические травмы']
+          ];
+          return groups.map(function (g) {
+            var opts = INJURIES[g[0]].map(function (d) {
+              return '<option value="' + esc(d.name) + '"' + (d.name === sel ? ' selected' : '') + '>' + esc(d.name) + '</option>';
+            }).join('');
+            return '<optgroup label="' + g[1] + '">' + opts + '</optgroup>';
+          }).join('');
+        }
+
+        function locOptions(sel) {
+          return Object.keys(LOC).map(function (k) {
+            return '<option value="' + k + '"' + (k === sel ? ' selected' : '') + '>' + esc(LOC[k].label) + '</option>';
+          }).join('');
+        }
+
+        function sceneOptions(sel) {
+          return SKILLS.map(function (s) {
+            return '<option value="' + esc(s) + '"' + (s === sel ? ' selected' : '') + '>' + esc(s) + '</option>';
+          }).join('');
+        }
+
+        function degOptions(sel) {
+          return DEG.map(function (d) {
+            return '<option value="' + d.key + '"' + (d.key === sel ? ' selected' : '') + '>' + esc(d.label) + (d.key === 'critical' ? '' : ' (' + d.tag + ')') + '</option>';
+          }).join('');
+        }
+
+        function chipsHTML(e) {
+          var def = findDef(e.name);
+          if (!def) return '';
+          var d = degOf(e.degree);
+          var crit = (d.val === null);
+          var aff = affected(def, e.loc, d.val, crit);
+          return aff.map(function (a) {
+            var cls = (a.val === '✕') ? 'chip lethal' : 'chip';
+            var sign = (a.val === '✕') ? '✕' : ('−' + a.val);
+            return '<span class="' + cls + '">' + esc(a.skill) + ' <b>' + sign + '</b></span>';
+          }).join('');
+        }
+
+        function cardHTML(e, i) {
+          var def = findDef(e.name);
+          if (!def) return '';
+          var urgent = def.urgent ? '<span class="urg">срочн.</span>' : '';
+          var second = (def.cat === 'mental')
+            ? '<select class="sel scene" data-f="scene">' + sceneOptions(e.scene) + '</select>'
+            : '<select class="sel loc" data-f="loc">' + locOptions(e.loc) + '</select>';
+          return '' +
+            '<div class="inj" data-i="' + i + '">' +
+              '<div class="top">' +
+                '<span class="idx">' + (i + 1) + '</span>' +
+                '<select class="sel name" data-f="name">' + nameOptions(e.name) + '</select>' +
+                second +
+                '<select class="sel deg" data-f="degree">' + degOptions(e.degree) + '</select>' +
+                urgent +
+                '<span class="rm" data-rm="' + i + '" title="Удалить">×</span>' +
+              '</div>' +
+              '<div class="skills">' + chipsHTML(e) + '</div>' +
+            '</div>';
+        }
+
+        // --- Рендер ---
+        function render() {
+          var list = document.getElementById('list');
+          if (!entries.length) {
+            list.innerHTML = '<div class="empty">Пока нет травм. Нажмите «+ Добавить травму».</div>';
+          } else {
+            list.innerHTML = entries.map(function (e, i) { return cardHTML(e, i); }).join('');
+          }
+          renderSummary();
+          save();
+        }
+
+        function renderSummary() {
+          var totals = {};
+          entries.forEach(function (e) {
+            var def = findDef(e.name);
+            if (!def) return;
+            var d = degOf(e.degree);
+            if (d.val === null) return; // критическая — летальна, не суммируем
+            affected(def, e.loc, d.val, false).forEach(function (a) {
+              if (typeof a.val === 'number') totals[a.skill] = (totals[a.skill] || 0) + a.val;
+            });
+          });
+          var keys = Object.keys(totals).sort(function (a, b) { return totals[b] - totals[a]; });
+          var el = document.getElementById('summary');
+          if (!keys.length) { el.innerHTML = '<span class="dim">— нет активных штрафов —</span>'; return; }
+          el.innerHTML = keys.map(function (k) {
+            return '<span class="chip tot"><b>−' + totals[k] + '</b> ' + esc(k) + '</span>';
+          }).join('');
+        }
+
+        // --- Состояние ---
+        function save() {
+          try { localStorage.setItem(KEY, JSON.stringify({ version: 1, entries: entries })); } catch (e) {}
+        }
+        function load() {
+          try {
+            var raw = localStorage.getItem(KEY);
+            if (!raw) return;
+            var data = JSON.parse(raw);
+            if (data && Array.isArray(data.entries)) entries = data.entries.filter(function (e) { return e && findDef(e.name); });
+          } catch (e) {}
+        }
+
+        function addInjury() {
+          var first = INJURIES.physical[0];
+          entries.push({ name: first.name, cat: 'physical', degree: 'light', loc: first.loc || 'head', scene: 'Концентрация' });
+          render();
+        }
+
+        // --- События ---
+        document.getElementById('list').addEventListener('change', function (ev) {
+          var t = ev.target;
+          if (!t.dataset || !t.dataset.f) return;
+          var card = t.closest('.inj');
+          if (!card) return;
+          var i = +card.dataset.i;
+          var f = t.dataset.f;
+          if (f === 'name') {
+            var def = findDef(t.value);
+            entries[i] = {
+              name: t.value,
+              cat: def.cat,
+              degree: entries[i].degree || 'light',
+              loc: def.loc || 'head',
+              scene: def.scene || 'Концентрация'
+            };
+          } else {
+            entries[i][f] = t.value;
+          }
+          render();
+        });
+
+        document.getElementById('list').addEventListener('click', function (ev) {
+          var rm = ev.target.closest('[data-rm]');
+          if (rm) { entries.splice(+rm.dataset.rm, 1); render(); }
+        });
+
+        document.getElementById('b_add').addEventListener('click', addInjury);
+
+        document.getElementById('b_print').addEventListener('click', function () { window.print(); });
+
+        document.getElementById('b_clear').addEventListener('click', function () {
+          if (entries.length && !window.confirm('Удалить все травмы?')) return;
+          entries = [];
+          render();
+        });
+
+        document.getElementById('b_export').addEventListener('click', function () {
+          var data = JSON.stringify({ version: 1, entries: entries }, null, 2);
+          var blob = new Blob([data], { type: 'application/json' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'arbor-echo-traumas.json';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        });
+
+        var fImport = document.getElementById('f_import');
+        document.getElementById('b_import').addEventListener('click', function () { fImport.click(); });
+        fImport.addEventListener('change', function (ev) {
+          var file = ev.target.files && ev.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function () {
+            try {
+              var data = JSON.parse(reader.result);
+              if (data && Array.isArray(data.entries)) {
+                entries = data.entries.filter(function (e) { return e && findDef(e.name); });
+                render();
+              } else { window.alert('Неверный формат файла травм.'); }
+            } catch (e) { window.alert('Не удалось прочитать файл.'); }
+            fImport.value = '';
+          };
+          reader.readAsText(file);
+        });
+
+        // --- Старт ---
+        load();
+        render();
+      })();
+    </script>
+  </body>
+</html>
