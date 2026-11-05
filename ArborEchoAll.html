@@ -26,10 +26,6 @@
       nav button:hover { color:var(--gold); border-color:var(--border); }
       nav button.active { color:var(--gold); border-color:var(--gold); background:rgba(200,168,75,.09); }
       .spacer { flex:1 1 auto; }
-      .sledy-btn { font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); background:rgba(200,168,75,.10); border:1px solid var(--gold); border-radius:2px; padding:4px 10px; cursor:pointer; white-space:nowrap; }
-      .sledy-btn:hover { color:var(--green); border-color:var(--green); }
-      .sledy-btn.active { color:var(--bg); background:var(--gold); border-color:var(--gold); }
-      .sledy-btn span { font-size:12px; letter-spacing:0; }
       .tools { display:flex; align-items:center; gap:6px; }
       #q { width:150px; background:#0b0e0a; border:1px solid var(--border); border-radius:2px; color:var(--text); font-family:var(--mono); font-size:10px; padding:4px 7px; outline:none; }
       #q:focus { border-color:var(--green); }
@@ -45,7 +41,6 @@
     <header>
       <span class="brand">Arbor Echo</span>
       <nav id="nav"></nav>
-      <button type="button" id="b_sledy" class="sledy-btn" title="Панель следов: травмы, патологии, просветления, гейсы">Следы <span aria-hidden="true">→</span></button>
       <span class="spacer"></span>
       <span class="tools"><input id="q" type="search" placeholder="поиск в разделе" autocomplete="off" spellcheck="false"><span id="cnt" class="cnt"></span></span>
     </header>
@@ -2876,7 +2871,7 @@
           }
           * { box-sizing:border-box; margin:0; padding:0; }
           body { background:#0d100b; font-family:var(--body); font-size:13px; color:var(--text); padding:10px 0; }
-          .toolbar { width:297mm; margin:0 auto 8px; display:flex; gap:6px; justify-content:flex-end; font-family:var(--mono); }
+          .toolbar { width:297mm; max-width:100%; margin:0 auto 8px; display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; font-family:var(--mono); }
           .toolbar button { background:var(--bg3); color:var(--gold); border:1px solid var(--border); border-radius:2px; font-family:var(--head); font-size:9px; letter-spacing:.12em; text-transform:uppercase; padding:5px 10px; cursor:pointer; }
           .toolbar button:hover { border-color:var(--green); color:var(--green); }
           .toolbar button.traces-toggle { order:-1; margin-right:auto; font-family:var(--head); font-size:11px; letter-spacing:.18em; text-transform:uppercase; padding:5px 13px; border-color:var(--gold); background:rgba(200,168,75,.08); }
@@ -3581,7 +3576,7 @@
 
 <style id="traces_style">
   /* ===== панель «Следы →» ===== */
-  .traces-drawer { position:fixed; top:0; right:0; height:100%; width:440px; max-width:94vw; background:var(--bg2); border-left:2px solid var(--gold); box-shadow:-10px 0 34px rgba(0,0,0,.55); transform:translateX(100%); transition:transform .24s ease; z-index:60; display:flex; flex-direction:column; padding:10px 11px 14px; overflow:auto; font-family:var(--body); color:var(--text); }
+  .traces-drawer { position:fixed; top:0; right:0; height:100%; width:440px; max-width:94vw; background:var(--bg2); border-left:2px solid var(--gold); box-shadow:-10px 0 34px rgba(0,0,0,.55); transform:translateX(100%); transition:transform .24s ease; z-index:60; display:flex; flex-direction:column; padding:10px 11px 14px; overflow:hidden; font-family:var(--body); color:var(--text); }
   .traces-drawer.open { transform:translateX(0); }
   .traces-drawer * { box-sizing:border-box; }
   .td-head { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--gold); padding-bottom:5px; margin-bottom:7px; flex:0 0 auto; }
@@ -3589,6 +3584,14 @@
   .td-close { background:none; border:0; color:var(--dim); font-family:var(--mono); font-size:20px; line-height:1; cursor:pointer; }
   .td-close:hover { color:var(--red); }
   .td-hint { font-style:italic; color:var(--dim); font-size:10.5px; margin-bottom:8px; padding-left:6px; border-left:2px solid var(--border); line-height:1.45; }
+  /* прокручиваемая область содержимого */
+  .td-scroll { flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding-right:2px; }
+  .tx-legend { font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; color:var(--dim); margin:0 0 7px; }
+  .tx-scrollbar { flex:0 0 auto; display:flex; align-items:center; gap:8px; border-top:1px solid var(--border); padding-top:7px; margin-top:7px; font-family:var(--mono); font-size:9.5px; color:var(--dim); }
+  .tx-sb-lab { letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; }
+  .tx-slider { flex:1 1 auto; min-width:0; accent-color:var(--gold); cursor:pointer; }
+  .tx-slider:disabled { opacity:.35; cursor:default; }
+  .tx-sb-val { min-width:30px; text-align:right; color:var(--gold); }
 
   /* ===== раскрывающиеся зоны ===== */
   .tx-sec { border:1px solid var(--border); border-radius:3px; background:var(--bg); margin-bottom:8px; overflow:hidden; }
@@ -3676,55 +3679,62 @@
     <span class="td-title">Следы<\/span>
     <button type="button" id="td_close" class="td-close" title="Закрыть">×<\/button>
   <\/div>
-  <div class="td-hint">Травмы, патологии, просветления и гейсы. Изменения сразу пишутся в столбцы ЗС / ИЗН листа. «−1 Здоровья» — это −1 к каждому из трёх навыков Здоровья (в сумме −3); так же работает любая группа или аспект: бонус/штраф применяется к каждому навыку внутри неё.<\/div>
+  <div class="td-scroll" id="traces_scroll">
+    <div class="tx-legend">Следы → ЗС / ИЗН листа<\/div>
 
-  <section class="tx-sec open" data-sec="traumas">
-    <button type="button" class="tx-sec-h" data-toggle="traumas" aria-expanded="true"><span class="tx-chev">▾<\/span><span>Травмы<\/span><span class="tx-badge" id="cnt_traumas">0<\/span><span class="tx-sec-sum" id="sum_traumas"><\/span><\/button>
-    <div class="tx-sec-b" id="sec_traumas">
-      <div class="td-hint">Название → подтягиваются штрафуемые навыки, степень меняет размер штрафа. «Внутренние органы» добавляет −1 Здоровья: −1 к Метаболизму, Гомеостазу и Нейромоторике (итого −3). Тяжёлая травма может дать постоянное последствие (−1 к ИЗН).<\/div>
-      <div id="td_list"><\/div>
-      <button type="button" id="td_add" class="td-add">+ Добавить травму<\/button>
+    <section class="tx-sec open" data-sec="traumas">
+      <button type="button" class="tx-sec-h" data-toggle="traumas" aria-expanded="true"><span class="tx-chev">▾<\/span><span>Травмы<\/span><span class="tx-badge" id="cnt_traumas">0<\/span><span class="tx-sec-sum" id="sum_traumas"><\/span><\/button>
+      <div class="tx-sec-b" id="sec_traumas">
+        <div class="tx-legend">Название · локализация · степень · последствия<\/div>
+        <div id="td_list"><\/div>
+        <button type="button" id="td_add" class="td-add">+ Добавить травму<\/button>
+      <\/div>
+    <\/section>
+
+    <section class="tx-sec" data-sec="pathologies">
+      <button type="button" class="tx-sec-h" data-toggle="pathologies" aria-expanded="false"><span class="tx-chev">▾<\/span><span>Патологии<\/span><span class="tx-badge" id="cnt_path">0<\/span><span class="tx-sec-sum" id="sum_path"><\/span><\/button>
+      <div class="tx-sec-b" id="sec_pathologies">
+        <div class="tx-legend">Тип · степень · ± к аспекту / навыку · Стигмат<\/div>
+        <div id="tp_list"><\/div>
+        <button type="button" id="tp_add" class="td-add">+ Добавить патологию<\/button>
+        <div class="tx-stigmas" id="tp_stigmas"><\/div>
+      <\/div>
+    <\/section>
+
+    <section class="tx-sec" data-sec="enlightenments">
+      <button type="button" class="tx-sec-h" data-toggle="enlightenments" aria-expanded="false"><span class="tx-chev">▾<\/span><span>Просветления<\/span><span class="tx-badge" id="cnt_light">0<\/span><span class="tx-sec-sum" id="sum_light"><\/span><\/button>
+      <div class="tx-sec-b" id="sec_enlightenments">
+        <div class="tx-legend">Воля / Харизма · Малое / Фундаментальное · Стигмат<\/div>
+        <div id="tl_list"><\/div>
+        <button type="button" id="tl_add" class="td-add">+ Добавить просветление<\/button>
+        <div class="tx-stigmas" id="tl_stigmas"><\/div>
+      <\/div>
+    <\/section>
+
+    <section class="tx-sec" data-sec="geases">
+      <button type="button" class="tx-sec-h" data-toggle="geases" aria-expanded="false"><span class="tx-chev">▾<\/span><span>Гейсы<\/span><span class="tx-badge" id="cnt_geas">0<\/span><span class="tx-sec-sum" id="sum_geas"><\/span><\/button>
+      <div class="tx-sec-b" id="sec_geases">
+        <div class="tx-legend">Бонус · Что / Где / Когда / Зачем · заклинание<\/div>
+        <div id="tg_list"><\/div>
+        <button type="button" id="tg_add" class="td-add">+ Добавить гейс<\/button>
+      <\/div>
+    <\/section>
+
+    <div class="td-panel">
+      <div class="td-st">Итого<\/div>
+      <div class="tx-lab">ЗС<\/div>
+      <div id="tx_sum_zs" class="td-sum"><\/div>
+      <div class="tx-lab">ИЗН<\/div>
+      <div id="tx_sum_izn" class="td-sum"><\/div>
+      <div id="tx_totals" class="tx-totals"><\/div>
+      <button type="button" id="tx_apply" class="td-apply">Перезаписать в лист<\/button>
+      <button type="button" id="tx_clear" class="td-clear">Очистить следы<\/button>
     <\/div>
-  <\/section>
-
-  <section class="tx-sec" data-sec="pathologies">
-    <button type="button" class="tx-sec-h" data-toggle="pathologies" aria-expanded="false"><span class="tx-chev">▾<\/span><span>Патологии<\/span><span class="tx-badge" id="cnt_path">0<\/span><span class="tx-sec-sum" id="sum_path"><\/span><\/button>
-    <div class="tx-sec-b" id="sec_pathologies">
-      <div class="td-hint">Название, тип, степень 1–6 и произвольные +/− к выбранным навыкам или группам. Физические патологии правят навыки Тела и Восприятия, психические — навыки Воли и Харизмы. Степень по правилам равна сумме модулей штрафов (с учётом раскрытия групп), но её можно задать вручную. Тёмный стигмат — предмет, закрепивший патологию.<\/div>
-      <div id="tp_list"><\/div>
-      <button type="button" id="tp_add" class="td-add">+ Добавить патологию<\/button>
-      <div class="tx-stigmas" id="tp_stigmas"><\/div>
-    <\/div>
-  <\/section>
-
-  <section class="tx-sec" data-sec="enlightenments">
-    <button type="button" class="tx-sec-h" data-toggle="enlightenments" aria-expanded="false"><span class="tx-chev">▾<\/span><span>Просветления<\/span><span class="tx-badge" id="cnt_light">0<\/span><span class="tx-sec-sum" id="sum_light"><\/span><\/button>
-    <div class="tx-sec-b" id="sec_enlightenments">
-      <div class="td-hint">Только бонусы к навыкам Воли и Харизмы. Малое просветление — +1 к одному навыку, Фундаментальное — +1 к аспекту (то есть +1 к каждому из трёх его навыков, итого +3). Светлый стигмат возникает из Фундаментального просветления.<\/div>
-      <div id="tl_list"><\/div>
-      <button type="button" id="tl_add" class="td-add">+ Добавить просветление<\/button>
-      <div class="tx-stigmas" id="tl_stigmas"><\/div>
-    <\/div>
-  <\/section>
-
-  <section class="tx-sec" data-sec="geases">
-    <button type="button" class="tx-sec-h" data-toggle="geases" aria-expanded="false"><span class="tx-chev">▾<\/span><span>Гейсы<\/span><span class="tx-badge" id="cnt_geas">0<\/span><span class="tx-sec-sum" id="sum_geas"><\/span><\/button>
-    <div class="tx-sec-b" id="sec_geases">
-      <div class="td-hint">Размер бонуса (1–2 балла сужения), тип вопроса и название заклинания. «Зачем» — четвёртая категория, уникальный Гейс светлого стигмата: +2 к броску. Баллы Гейсов идут к броску заклинания, а не в навыки листа, поэтому в ЗС не записываются.<\/div>
-      <div id="tg_list"><\/div>
-      <button type="button" id="tg_add" class="td-add">+ Добавить гейс<\/button>
-    <\/div>
-  <\/section>
-
-  <div class="td-panel">
-    <div class="td-st">Итого записано в лист<\/div>
-    <div class="tx-lab">ЗС · бонусы и штрафы следа<\/div>
-    <div id="tx_sum_zs" class="td-sum"><\/div>
-    <div class="tx-lab">ИЗН · первичные значения<\/div>
-    <div id="tx_sum_izn" class="td-sum"><\/div>
-    <div id="tx_totals" class="tx-totals"><\/div>
-    <button type="button" id="tx_apply" class="td-apply">Перезаписать в лист (ЗС / ИЗН)<\/button>
-    <button type="button" id="tx_clear" class="td-clear">Очистить все следы<\/button>
+  <\/div>
+  <div class="tx-scrollbar">
+    <span class="tx-sb-lab">Прокрутка<\/span>
+    <input type="range" id="traces_slider" class="tx-slider" min="0" max="100" value="0" step="1" aria-label="Прокрутка следов">
+    <span class="tx-sb-val" id="traces_slider_val">—<\/span>
   <\/div>
 <\/div>
 
@@ -3747,7 +3757,6 @@
     mental:['vo_izn','vo_sk','ha_emp','ha_lead','ha_dip'],
     light:['vo_izn','vo_sk','ha_emp','ha_lead','ha_dip']
   };
-  var SCOPE_CHAR = { physical:['te','pe'], mental:['vo','ha'], light:['vo','ha'] };
 
   var LOC = {
     head:{ label:'Голова', skill:'Концентрация' },
@@ -3843,10 +3852,7 @@
     return '—';
   }
   function targetOptions(scope, sel) {
-    var html = '<optgroup label="Группа / аспект (± каждому навыку)">';
-    (SCOPE_CHAR[scope] || []).forEach(function (k) {
-      html += '<option value="grp:' + k + '"' + (sel === 'grp:' + k ? ' selected' : '') + '>' + esc(CHAR[k] || k) + ' · ' + (groupSkills[k] || []).length + ' навыков<\/option>';
-    });
+    var html = '<optgroup label="Аспект (± каждому навыку)">';
     (SCOPE_ASP[scope] || []).forEach(function (k) {
       html += '<option value="grp:' + k + '"' + (sel === 'grp:' + k ? ' selected' : '') + '>' + esc(ASP[k] || k) + ' · ' + (groupSkills[k] || []).length + ' навыка<\/option>';
     });
@@ -3863,7 +3869,7 @@
     if (!t) return false;
     if (t.indexOf('grp:') === 0) {
       var k = t.slice(4);
-      return (SCOPE_CHAR[scope] || []).indexOf(k) !== -1 || (SCOPE_ASP[scope] || []).indexOf(k) !== -1;
+      return (SCOPE_ASP[scope] || []).indexOf(k) !== -1;
     }
     if (t.indexOf('sk:') === 0) {
       var r = byName[t.slice(3)];
@@ -3971,7 +3977,7 @@
     var d = degOf(e.degree);
     if (d.val === null) return '<span class="td-dim">Критическая — лечение невозможно<\/span>';
     var diff = treatDifficulty(e.degree, !!e.internal && findDef(e.name).cat === 'physical');
-    return 'Лечение: <b>Сл ' + diff + '<\/b> · <span class="mtd">Операция (Анатомия + Метаболизм)<\/span> · <span class="mtd">Медикаментозное (Биохимия + Гомеостаз)<\/span>';
+    return 'Лечение: <b>Сл ' + diff + '<\/b>';
   }
   function cardHTML(e, i) {
     var def = findDef(e.name); if (!def) return '';
@@ -3990,17 +3996,13 @@
         '<label class="td-chk' + (e.permOn ? ' on' : '') + '"><input type="checkbox" data-f="permOn"' + (e.permOn ? ' checked' : '') + '> Постоянное последствие (−1 ИЗН)<\/label>' +
         '<select class="td-sel pskill" data-f="permSkill">' + skillOptions(ps) + '<\/select><\/div>';
     }
-    var note = '';
-    if (e.internal && def.cat === 'physical') {
-      note = '<div class="tx-note">−1 Здоровья = −1 к каждому из 3 навыков Здоровья: Метаболизм, Гомеостаз, Нейромоторика (в сумме −3).<\/div>';
-    }
     return '<div class="td-inj" data-i="' + i + '">' +
       '<div class="top"><span class="td-idx">' + (i + 1) + '<\/span>' +
         '<select class="td-sel name" data-f="name">' + nameOptions(e.name) + '<\/select>' + second +
         '<select class="td-sel deg" data-f="degree">' + degOptions(e.degree) + '<\/select>' +
         '<span class="td-rm" data-rm="' + i + '" title="Удалить">×<\/span><\/div>' +
       '<div class="td-flags">' + flags + '<\/div>' + perm +
-      '<div class="td-skills">' + chipsHTML(e) + '<\/div>' + note +
+      '<div class="td-skills">' + chipsHTML(e) + '<\/div>' +
       '<div class="td-treat">' + treatHTML(e) + '<\/div><\/div>';
   }
 
@@ -4031,9 +4033,9 @@
         '<select class="td-sel tx-kind" data-f="kind">' + opts([['physical','Физическая'],['mental','Психическая']], e.kind) + '<\/select>' +
         '<select class="td-sel deg" data-f="degree" title="Степень патологии (1–6)">' + opts(degs, e.degree) + '<\/select>' +
         '<span class="td-rm" data-rm="' + i + '" title="Удалить">×<\/span><\/div>' +
-      '<div class="tx-sub">Расчётная степень: <b>' + computedDegree(e) + '<\/b> · ' +
+      '<div class="tx-sub">Степень <b>' + computedDegree(e) + '<\/b> · ' +
         '<label class="td-chk' + (e.degreeAuto ? ' on' : '') + '"><input type="checkbox" data-f="degreeAuto"' + (e.degreeAuto ? ' checked' : '') + '> авто<\/label> · ' +
-        'писать в <select class="td-sel tx-col" data-f="col">' + colOptions(e.col) + '<\/select><\/div>' +
+        '<select class="td-sel tx-col" data-f="col">' + colOptions(e.col) + '<\/select><\/div>' +
       '<div class="tx-mods">' + (e.mods || []).map(function (m, j) { return modRowHTML(m, j, e.kind); }).join('') + '<\/div>' +
       '<button type="button" class="tx-addmod" data-addmod="' + i + '">+ Навык / группа<\/button>' +
       '<div class="tx-effect">' + modChips(e) + '<\/div>' +
@@ -4046,7 +4048,7 @@
         '<input class="td-sel name tx-name" data-f="name" type="text" placeholder="Название просветления" value="' + esc(e.name) + '">' +
         '<select class="td-sel tx-kind" data-f="kind">' + opts([['minor','Малое'],['fundamental','Фундаментальное']], e.kind) + '<\/select>' +
         '<span class="td-rm" data-rm="' + i + '" title="Удалить">×<\/span><\/div>' +
-      '<div class="tx-sub">Только Воля и Харизма · писать в <select class="td-sel tx-col" data-f="col">' + colOptions(e.col) + '<\/select><\/div>' +
+      '<div class="tx-sub">Воля / Харизма · <select class="td-sel tx-col" data-f="col">' + colOptions(e.col) + '<\/select><\/div>' +
       '<div class="tx-mods">' + (e.mods || []).map(function (m, j) { return modRowHTML(m, j, 'light'); }).join('') + '<\/div>' +
       '<button type="button" class="tx-addmod" data-addmod="' + i + '">+ Навык / аспект<\/button>' +
       '<div class="tx-effect">' + modChips(e) + '<\/div>' +
@@ -4061,8 +4063,7 @@
         '<select class="td-sel tx-q" data-f="q">' + opts([['what','Что'],['where','Где'],['when','Когда'],['why','Зачем']], e.q) + '<\/select>' +
         '<input class="tx-val" data-f="bonus" type="number" step="1" inputmode="numeric" title="Размер бонуса" value="' + num(e.bonus) + '">' +
         '<span class="td-rm" data-rm="' + i + '" title="Удалить">×<\/span><\/div>' +
-      '<div class="tx-sub">Гейс «' + qName + '» · бонус <b>' + sign(num(e.bonus)) + '<\/b> к броску' +
-        (e.q === 'why' ? ' · «Зачем» — Гейс светлого стигмата (+2)' : '') + '<\/div><\/div>';
+      '<div class="tx-sub">' + qName + ' · бонус <b>' + sign(num(e.bonus)) + '<\/b><\/div><\/div>';
   }
   function stigmaLine(arr, light) {
     var items = [];
@@ -4157,8 +4158,8 @@
   function renderSummaries(d) {
     $('tx_sum_zs').innerHTML = chipList(d.zs);
     $('tx_sum_izn').innerHTML = chipList(d.izn);
-    $('tx_totals').innerHTML = 'Сумма по ЗС: <b>' + sign(sumMap(d.zs)) + '<\/b> · по ИЗН: <b>' + sign(sumMap(d.izn)) +
-      '<\/b> · баллы Гейсов: <b>+' + d.sec.geases.bonus + '<\/b>';
+    $('tx_totals').innerHTML = 'Σ ЗС <b>' + sign(sumMap(d.zs)) + '<\/b> · Σ ИЗН <b>' + sign(sumMap(d.izn)) +
+      '<\/b> · Гейсы <b>+' + d.sec.geases.bonus + '<\/b>';
     $('cnt_traumas').textContent = state.traumas.length;
     $('cnt_path').textContent = state.pathologies.length;
     $('cnt_light').textContent = state.enlightenments.length;
@@ -4198,18 +4199,19 @@
   function render() {
     $('td_list').innerHTML = state.traumas.length
       ? state.traumas.map(cardHTML).join('')
-      : '<div class="td-empty">Пока нет травм. Нажмите «+ Добавить травму».<\/div>';
+      : '<div class="td-empty">Нет травм<\/div>';
     $('tp_list').innerHTML = state.pathologies.length
       ? state.pathologies.map(pathCard).join('')
-      : '<div class="td-empty">Пока нет патологий. Нажмите «+ Добавить патологию».<\/div>';
+      : '<div class="td-empty">Нет патологий<\/div>';
     $('tl_list').innerHTML = state.enlightenments.length
       ? state.enlightenments.map(lightCard).join('')
-      : '<div class="td-empty">Пока нет просветлений. Нажмите «+ Добавить просветление».<\/div>';
+      : '<div class="td-empty">Нет просветлений<\/div>';
     $('tg_list').innerHTML = state.geases.length
       ? state.geases.map(geasCard).join('')
-      : '<div class="td-empty">Пока нет гейсов. Нажмите «+ Добавить гейс».<\/div>';
+      : '<div class="td-empty">Нет гейсов<\/div>';
     renderAccordion();
     applyAll();
+    syncSlider();
   }
   function renderAccordion() {
     Object.keys(state.open).forEach(function (k) {
@@ -4244,11 +4246,17 @@
       if (!e.col) e.col = 'zs';
       if (e.degreeAuto === undefined) e.degreeAuto = true;
       if (!e.degree) e.degree = 1;
+      e.mods.forEach(function (m) {
+        if (!targetInScope(m.target, e.kind)) m.target = defaultTarget(e.kind);
+      });
     });
     state.enlightenments.forEach(function (e) {
       if (!Array.isArray(e.mods)) e.mods = [];
       if (!e.kind) e.kind = 'minor';
       if (!e.col) e.col = 'zs';
+      e.mods.forEach(function (m) {
+        if (!targetInScope(m.target, 'light')) m.target = defaultTarget(e.kind);
+      });
     });
     state.geases.forEach(function (e) {
       if (!e.q) e.q = 'what';
@@ -4346,6 +4354,24 @@
     return { sec:secEl.dataset.sec, arr:state[secEl.dataset.sec], i:+card.dataset.i };
   }
   var drawer = $('traces_drawer'), toggle = $('b_traces');
+  var scrollBox = $('traces_scroll'), slider = $('traces_slider'), sliderVal = $('traces_slider_val');
+  function syncSlider() {
+    var max = Math.max(0, scrollBox.scrollHeight - scrollBox.clientHeight);
+    slider.max = max;
+    slider.value = Math.min(scrollBox.scrollTop, max);
+    sliderVal.textContent = max ? (Math.round(scrollBox.scrollTop / max * 100) + '%') : '—';
+    slider.disabled = !max;
+  }
+  slider.addEventListener('input', function () {
+    scrollBox.scrollTop = +slider.value;
+    var max = +slider.max;
+    sliderVal.textContent = max ? (Math.round(+slider.value / max * 100) + '%') : '—';
+  });
+  scrollBox.addEventListener('scroll', syncSlider);
+  window.addEventListener('resize', syncSlider);
+  if (window.MutationObserver) {
+    new MutationObserver(syncSlider).observe(scrollBox, { childList:true, subtree:true });
+  }
 
   drawer.addEventListener('input', function (ev) { onField(ev, false); });
   drawer.addEventListener('change', function (ev) { onField(ev, true); });
@@ -4396,15 +4422,8 @@
     toggle.classList.toggle('open', on);
     toggle.setAttribute('aria-expanded', on ? 'true' : 'false');
     drawer.setAttribute('aria-hidden', on ? 'false' : 'true');
-    try { parent.postMessage({__aeTracesState: on}, '*'); } catch (e) {}
-    if (on) { resync(); applyAll(); }
+    if (on) { resync(); applyAll(); syncSlider(); }
   }
-  window.addEventListener('message', function (ev) {
-    var d = ev.data;
-    if (!d || typeof d !== 'object') return;
-    if (d.__aeTraces === 'open') setOpen(true);
-    else if (d.__aeTraces === 'toggle') setOpen(!drawer.classList.contains('open'));
-  });
   toggle.addEventListener('click', function () { setOpen(!drawer.classList.contains('open')); });
   $('td_close').addEventListener('click', function () { setOpen(false); });
   document.addEventListener('keydown', function (ev) {
@@ -7100,24 +7119,6 @@
           nav.appendChild(b);
           buttons.push(b);
         });
-        /* глобальная кнопка «Следы →»: переходит на лист персонажа и открывает панель */
-        var sledyBtn = document.getElementById('b_sledy');
-        function postTraces(f, cmd) {
-          try { f.contentWindow.postMessage({__aeTraces: cmd}, '*'); } catch (e) {}
-        }
-        sledyBtn.addEventListener('click', function () {
-          var f = frame('sheet');
-          if (!f) return;
-          var fresh = !f.dataset.mounted;
-          var cmd = (current === 'sheet') ? 'toggle' : 'open';
-          show('sheet');
-          if (fresh) {
-            f.addEventListener('load', function once() {
-              f.removeEventListener('load', once);
-              postTraces(f, cmd);
-            });
-          } else postTraces(f, cmd);
-        });
         window.addEventListener('message', function (e) {
           var d = e.data;
           if (!d || typeof d !== 'object') return ;
@@ -7138,9 +7139,6 @@
           if (d.__aeHits !== undefined && src.dataset.key === current) {
             var n = d.__aeHits | 0;
             setCount(n ? ((d.__aeIdx | 0) + 1) + '/' + n : '');
-          }
-          if (d.__aeTracesState !== undefined && src.dataset.key === 'sheet') {
-            document.getElementById('b_sledy').classList.toggle('active', !!d.__aeTracesState);
           }
         });
         var lastQ = '',timer = null;
